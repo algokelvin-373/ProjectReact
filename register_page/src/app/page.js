@@ -151,16 +151,25 @@ export default function PersonalDataForm() {
               <Label className="text-gray-600 text-sm mb-4 block">Golongan Darah</Label>
               <div className="grid grid-cols-4 gap-3">
                 {["A", "B", "AB", "O"].map((type) => (
-                  <div key={type} className="flex items-center justify-center">
-                    <label className="flex flex-col items-center cursor-pointer">
+                  <div key={type} className="relative">
+                    <label className="cursor-pointer block">
                       <div
-                        className={`flex items-center justify-center w-16 h-12 border rounded-xl transition-colors ${
+                        className={`flex items-center justify-between w-16 h-12 border rounded-xl transition-colors px-3 ${
                           formData.golonganDarah === type
                             ? "border-blue-500 bg-blue-50"
                             : "border-gray-200 hover:border-blue-300"
                         }`}
                       >
                         <span className="text-gray-700 font-medium">{type}</span>
+                        <div
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                            formData.golonganDarah === type
+                              ? "border-blue-500 bg-blue-500"
+                              : "border-gray-300 bg-white"
+                          }`}
+                        >
+                          {formData.golonganDarah === type && <div className="w-2 h-2 rounded-full bg-white"></div>}
+                        </div>
                       </div>
                       <input
                         type="radio"
@@ -168,7 +177,7 @@ export default function PersonalDataForm() {
                         value={type}
                         checked={formData.golonganDarah === type}
                         onChange={(e) => handleInputChange("golonganDarah", e.target.value)}
-                        className="mt-2 w-4 h-4 text-blue-600"
+                        className="sr-only"
                       />
                     </label>
                   </div>
@@ -182,9 +191,7 @@ export default function PersonalDataForm() {
               <div className="space-y-3">
                 <label className="flex items-center space-x-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-blue-300">
                   <div className="w-6 h-6 text-blue-500">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2Z" />
-                    </svg>
+                    <img src="/images/ic_gender_man.png" alt="Success" />
                   </div>
                   <span className="flex-1 text-gray-700">Laki-laki</span>
                   <input
@@ -197,9 +204,7 @@ export default function PersonalDataForm() {
                 </label>
                 <label className="flex items-center space-x-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-blue-300">
                   <div className="w-6 h-6 text-pink-500">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 4C13.1 4 14 4.9 14 6C14 7.1 13.1 8 12 8C10.9 8 10 7.1 10 6C10 4.9 10.9 4 12 4Z" />
-                    </svg>
+                    <img src="/images/ic_gender_woman.png" alt="Success" />
                   </div>
                   <span className="flex-1 text-gray-700">Perempuan</span>
                   <input
