@@ -229,7 +229,7 @@ export default function PersonalDataForm() {
           {showSuccessModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end">
               <div className="bg-white w-full rounded-t-3xl p-6 transform transition-transform duration-300 ease-out animate-slide-up">
-                {/* Success Icon */}
+                
                 <div className="flex justify-center mb-6">
                   <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
                     <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
