@@ -5,7 +5,6 @@ import { ArrowLeft, Calendar } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 export default function PersonalDataForm() {
   const slideUpAnimation = `
@@ -154,7 +153,13 @@ export default function PersonalDataForm() {
                 {["A", "B", "AB", "O"].map((type) => (
                   <div key={type} className="flex items-center justify-center">
                     <label className="flex flex-col items-center cursor-pointer">
-                      <div className="flex items-center justify-center w-16 h-12 border border-gray-200 rounded-xl hover:border-blue-300">
+                      <div
+                        className={`flex items-center justify-center w-16 h-12 border rounded-xl transition-colors ${
+                          formData.golonganDarah === type
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-gray-200 hover:border-blue-300"
+                        }`}
+                      >
                         <span className="text-gray-700 font-medium">{type}</span>
                       </div>
                       <input
@@ -163,7 +168,7 @@ export default function PersonalDataForm() {
                         value={type}
                         checked={formData.golonganDarah === type}
                         onChange={(e) => handleInputChange("golonganDarah", e.target.value)}
-                        className="mt-2"
+                        className="mt-2 w-4 h-4 text-blue-600"
                       />
                     </label>
                   </div>
@@ -233,15 +238,7 @@ export default function PersonalDataForm() {
               <div className="bg-white w-full rounded-t-3xl p-6 transform transition-transform duration-300 ease-out animate-slide-up">
                 
                 <div className="flex justify-center mb-6">
-                  <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
-                    <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
-                      <img 
-                        src="/images/ic_runner.png" 
-                        alt="Success" 
-                        className="w-12 h-12"
-                      />
-                    </div>
-                  </div>
+                  <img src="/images/ic_runner.png" alt="Success" className="w-32 h-32" />
                 </div>
 
                 {/* Success Message */}
