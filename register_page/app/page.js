@@ -8,6 +8,20 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 export default function PersonalDataForm() {
+  const slideUpAnimation = `
+    @keyframes slide-up {
+      from {
+        transform: translateY(100%);
+      }
+      to {
+        transform: translateY(0);
+      }
+    }
+    .animate-slide-up {
+      animation: slide-up 0.3s ease-out;
+    }
+  `
+
   const [formData, setFormData] = useState({
     namaLengkap: "",
     tinggiBadan: "",
@@ -16,6 +30,8 @@ export default function PersonalDataForm() {
     golonganDarah: "",
     jenisKelamin: "",
   })
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
 
   const isFormValid = () => {
     return (
@@ -36,8 +52,23 @@ export default function PersonalDataForm() {
   }
 
   const handleSubmit = () => {
-    console.log("Form data:", formData)
-    alert("Data berhasil disimpan! Cek console untuk melihat data.")
+    if (isFormValid()) {
+      console.log("=== DATA FORM YANG TERISI ===")
+      console.log("Nama Lengkap:", formData.namaLengkap)
+      console.log("Tinggi Badan:", formData.tinggiBadan + " cm")
+      console.log("Berat Badan:", formData.beratBadan + " kg")
+      console.log("Tanggal Lahir:", formData.tanggalLahir)
+      console.log("Golongan Darah:", formData.golonganDarah)
+      console.log("Jenis Kelamin:", formData.jenisKelamin)
+      console.log("===============================")
+
+      // Tampilkan bottom sheet instead of alert
+      setShowSuccessModal(true)
+    }
+  }
+
+  const handleCloseModal = () => {
+    setShowSuccessModal(false)
   }
 
   return (
@@ -193,6 +224,42 @@ export default function PersonalDataForm() {
             </Button>
           </div>
         </div>
+
+        {/* Success Bottom Sheet */}
+          {showSuccessModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end">
+              <div className="bg-white w-full rounded-t-3xl p-6 transform transition-transform duration-300 ease-out animate-slide-up">
+                {/* Success Icon */}
+                <div className="flex justify-center mb-6">
+                  <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
+                    <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
+                      <img 
+                        src="/images/ic_runner.png" 
+                        alt="Success" 
+                        className="w-12 h-12"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Success Message */}
+                <div className="text-center mb-8">
+                  <h2 className="text-xl font-bold text-gray-900 mb-3">Data Berhasil Disimpan</h2>
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    Untuk mengubah data, kamu bisa mengakses menu profil.
+                  </p>
+                </div>
+
+                {/* Action Button */}
+                <Button
+                  onClick={handleCloseModal}
+                  className="w-full py-4 bg-gradient-to-r from-red-400 to-red-600 hover:from-red-500 hover:to-red-700 text-white font-medium rounded-xl text-lg"
+                >
+                  Selanjutnya
+                </Button>
+              </div>
+            </div>
+          )}
       </div>
     </div>
   )
