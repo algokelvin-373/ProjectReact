@@ -9,13 +9,24 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 export default function PersonalDataForm() {
   const [formData, setFormData] = useState({
-    namaLengkap: "Adinda Rahma",
+    namaLengkap: "",
     tinggiBadan: "",
     beratBadan: "",
-    tanggalLahir: "18/09/1998",
+    tanggalLahir: "",
     golonganDarah: "",
-    jenisKelamin: "perempuan",
+    jenisKelamin: "",
   })
+
+  const isFormValid = () => {
+    return (
+      formData.namaLengkap.trim() !== "" &&
+      formData.tinggiBadan.trim() !== "" &&
+      formData.beratBadan.trim() !== "" &&
+      formData.tanggalLahir.trim() !== "" &&
+      formData.golonganDarah !== "" &&
+      formData.jenisKelamin !== ""
+    )
+  }
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -171,7 +182,12 @@ export default function PersonalDataForm() {
           <div className="max-w-md mx-auto">
             <Button
               onClick={handleSubmit}
-              className="w-full py-4 bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white font-medium rounded-xl text-lg"
+              disabled={!isFormValid()}
+              className={`w-full py-4 font-medium rounded-xl text-lg transition-all duration-300 ${
+                isFormValid()
+                  ? "bg-gradient-to-r from-red-400 to-red-600 hover:from-red-500 hover:to-red-700 text-white cursor-pointer"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
             >
               Selesai
             </Button>
