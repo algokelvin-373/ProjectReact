@@ -67,8 +67,10 @@ export default function PersonalDataForm() {
     }
   }
 
-  const handleCloseModal = () => {
-    setShowSuccessModal(false)
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      setShowSuccessModal(false)
+    }
   }
 
   return (
@@ -227,7 +229,7 @@ export default function PersonalDataForm() {
 
         {/* Success Bottom Sheet */}
           {showSuccessModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end">
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" onClick={handleOverlayClick}>
               <div className="bg-white w-full rounded-t-3xl p-6 transform transition-transform duration-300 ease-out animate-slide-up">
                 
                 <div className="flex justify-center mb-6">
@@ -252,7 +254,7 @@ export default function PersonalDataForm() {
 
                 {/* Action Button */}
                 <Button
-                  onClick={handleCloseModal}
+                  onClick={() => setShowSuccessModal(false)}
                   className="w-full py-4 bg-gradient-to-r from-red-400 to-red-600 hover:from-red-500 hover:to-red-700 text-white font-medium rounded-xl text-lg"
                 >
                   Selanjutnya
