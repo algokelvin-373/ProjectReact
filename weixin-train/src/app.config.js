@@ -1,4 +1,7 @@
 export default defineAppConfig({
+  plugins: [
+    "@tarojs/plugin-tailwind", // 👈 pastikan ini ada
+  ],
   pages: [
     // SPLASH SCREEN
     "pages/index/index",
