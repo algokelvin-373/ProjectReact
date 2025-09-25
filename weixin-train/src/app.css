@@ -3,19 +3,10 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: "Poppins";
-  src: url(/src/assets/fonts/Poppins-Regular.ttf) format("truetype");
-}
-
-/* Global style untuk Text & View */
-:root {
-  --font-poppins: "Poppins", sans-serif;
-}
-
+/* Global style */
 Text,
 View {
-  font-family: var(--font-poppins);
+  font-family: "Poppins", sans-serif;
 }
 
 .activeOpacity {
