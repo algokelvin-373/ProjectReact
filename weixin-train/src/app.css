@@ -1,34 +1,6 @@
 /* src/app.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Global style */
+/* HANYA ini yang boleh ada di sini */
 Text,
 View {
   font-family: "Poppins", sans-serif;
-}
-
-.activeOpacity {
-  opacity: 0.7;
-}
-
-.btn-text {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  border: none;
-  padding: 8px 10px;
-  line-height: 1;
-}
-
-.btn-text__icon {
-  width: 20px;
-  height: 20px;
-}
-
-.btn-text__label {
-  font-size: 14px;
-  color: #334155;
 }
