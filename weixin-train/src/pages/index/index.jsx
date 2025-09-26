@@ -1,19 +1,46 @@
-// src/pages/index/index.tsx
-import { View, Text } from "@tarojs/components";
-import Taro, { useLoad } from "@tarojs/taro";
+import { Component } from 'react'
+import { connect } from 'react-redux'
+import { View, Button, Text } from '@tarojs/components'
 
-export default function Index() {
-  useLoad(() => {
-    setTimeout(() => {
-      Taro.reLaunch({
-        url: "/pages/login/index",
-      });
-    }, 2000);
-  });
+import { add, minus, asyncAdd } from '../../actions/counter'
 
-  return (
-    <View className="flex justify-center items-center h-screen bg-blue-100">
-      <Text className="text-blue-500 text-4xl">大家好</Text>
-    </View>
-  );
+import './index.scss'
+
+
+@connect(({ counter }) => ({
+  counter
+}), (dispatch) => ({
+  add () {
+    dispatch(add())
+  },
+  dec () {
+    dispatch(minus())
+  },
+  asyncAdd () {
+    dispatch(asyncAdd())
+  }
+}))
+class Index extends Component {
+  componentWillReceiveProps (nextProps) {
+    console.log(this.props, nextProps)
+  }
+
+  componentWillUnmount () { }
+
+  componentDidShow () { }
+
+  componentDidHide () { }
+
+  render () {
+    return (
+      <View className='index'>
+        <View>
+          <Text className='font-bold'>Hello, World</Text>
+        </View>
+      </View>
+    )
+  }
 }
+
+export default Index
+

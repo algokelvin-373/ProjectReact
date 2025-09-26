@@ -1,14 +1,19 @@
-import { useLaunch } from "@tarojs/taro";
+import { Component } from 'react'
+import { Provider } from 'react-redux'
 
-import "./app.css";
+import configStore from './store'
+import './app.scss'
 
-function App({ children }) {
-  useLaunch(() => {
-    console.log("App launched.");
-  });
+const store = configStore()
 
-  // children 是将要会渲染的页面
-  return children;
+class App extends Component {
+  render () {
+    return (
+      <Provider store={store}>
+        {this.props.children}
+      </Provider>
+    )
+  }
 }
 
-export default App;
+export default App

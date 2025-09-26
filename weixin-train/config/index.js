@@ -1,13 +1,12 @@
 import { defineConfig } from "@tarojs/cli";
-
 import devConfig from "./dev";
 import prodConfig from "./prod";
 
 // https://taro-docs.jd.com/docs/next/config#defineconfig-辅助函数
 export default defineConfig(async (merge, { command, mode }) => {
   const baseConfig = {
-    projectName: "weixin-train",
-    date: "2025-9-25",
+    projectName: "ai-facerecognition-taro",
+    date: "2025-9-18",
     designWidth: 750,
     deviceRatio: {
       640: 2.34 / 2,
@@ -17,7 +16,7 @@ export default defineConfig(async (merge, { command, mode }) => {
     },
     sourceRoot: "src",
     outputRoot: "dist",
-    plugins: ["@tarojs/plugin-generator"],
+    // plugins: [ ],
     defineConstants: {},
     copy: {
       patterns: [],
@@ -29,12 +28,21 @@ export default defineConfig(async (merge, { command, mode }) => {
       postcss: {
         pxtransform: {
           enable: true,
+          config: {},
         },
         cssModules: {
-          enable: false,
+          enable: false, // 默认为 false，如需使用 css modules 功能，则设为 true
+          config: {
+            namingPattern: "module", // 转换模式，取值为 global/module
+            generateScopedName: "[name]__[local]___[hash:base64:5]",
+          },
         },
         tailwindcss: {
           enable: true,
+        },
+        plugins: {
+          tailwindcss: {},
+          autoprefixer: {},
         },
       },
     },
@@ -51,6 +59,9 @@ export default defineConfig(async (merge, { command, mode }) => {
         autoprefixer: {
           enable: true,
           config: {},
+        },
+        tailwindcss: {
+          enable: true,
         },
         cssModules: {
           enable: false, // 默认为 false，如需使用 css modules 功能，则设为 true

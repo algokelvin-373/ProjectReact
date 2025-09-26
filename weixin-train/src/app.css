@@ -1,8 +1,0 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-Text,
-View {
-  font-family: "Poppins", sans-serif;
-}
