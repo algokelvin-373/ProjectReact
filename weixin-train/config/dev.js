@@ -1,7 +1,17 @@
-
-
 export default {
-  
-  mini: {},
-  h5: {}
-}
+  mini: {
+    postcss: {
+      pxtransform: {
+        enable: true,
+      },
+      cssModules: {
+        enable: false,
+      },
+      tailwindcss: {
+        enable: true,
+      },
+    },
+  },
+
+  h5: {},
+};
