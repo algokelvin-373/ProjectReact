@@ -17,11 +17,6 @@ const LoginPage = () => {
 
   return (
     <View className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-6 flex flex-col items-center justify-center">
-      {/* Header Logo */}
-      <View className="mb-10">
-        <Text className="text-3xl font-bold text-blue-700">cignifi</Text>
-      </View>
-
       {/* Title */}
       <Text className="text-xl font-large text-black mb-6">
         Login to your Account
@@ -81,14 +76,6 @@ const LoginPage = () => {
           className="flex-1 bg-white rounded-lg shadow-sm p-3 flex justify-center items-center cursor-pointer hover:bg-gray-50 transition"
         >
           <Text className="text-blue-600 text-2xl">f</Text>
-        </View>
-
-        {/* Twitter */}
-        <View
-          onClick={() => handleSocialLogin("twitter")}
-          className="flex-1 bg-white rounded-lg shadow-sm p-3 flex justify-center items-center cursor-pointer hover:bg-gray-50 transition"
-        >
-          <Text className="text-blue-400 text-2xl">🐦</Text>
         </View>
       </View>
 
