@@ -8,7 +8,7 @@ const LoginPage = () => {
   };
 
   const handleSignUp = () => {
-    Taro.navigateTo({ url: "/pages/signup/index" });
+    //Taro.navigateTo({ url: "/pages/signup/index" });
   };
 
   const handleSocialLogin = (provider) => {
@@ -23,7 +23,7 @@ const LoginPage = () => {
       </View>
 
       {/* Title */}
-      <Text className="text-xl font-medium text-gray-800 mb-6">
+      <Text className="text-xl font-large text-black mb-6">
         Login to your Account
       </Text>
 
@@ -52,9 +52,9 @@ const LoginPage = () => {
         {/* Sign In Button */}
         <Button
           onClick={handleLogin}
-          className="w-full py-3 bg-blue-700 text-white font-medium rounded-lg shadow hover:bg-blue-800 transition-colors"
+          className="w-full py-3 my-3 bg-blue-700 rounded-lg shadow hover:bg-blue-800 transition-colors"
         >
-          Sign in
+          <Text className="text-[20px] text-white font-medium">Sign In</Text>
         </Button>
       </View>
 
