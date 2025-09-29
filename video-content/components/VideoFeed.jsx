@@ -3,19 +3,6 @@
 import { useEffect, useMemo } from "react";
 import VideoCard from "./VideoCard";
 
-const defaultVideos = [
-  {
-    id: "default-1",
-    src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-    author: "@default",
-    caption: "Welcome to your short-video feed",
-    likes: 128,
-    comments: 7,
-    shares: 2,
-    music: "Default Track - v0",
-  },
-];
-
 export default function VideoFeed({ initialVideos }) {
   const items = useMemo(() => initialVideos, [initialVideos]);
 

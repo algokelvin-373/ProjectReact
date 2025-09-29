@@ -10,17 +10,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const fallbackItem = {
-  id: "fallback",
-  src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-  author: "@fallback",
-  caption: "Fallback video item",
-  likes: 10,
-  comments: 1,
-  shares: 0,
-  music: "Fallback Track",
-};
-
 export default function VideoCard({ item }) {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
