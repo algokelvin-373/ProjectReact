@@ -15,13 +15,10 @@ export default function VideoFeed({ initialVideos }) {
   }, []);
 
   return (
-    <section
-      aria-label="Short video feed"
-      className="h-dvh w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth bg-black"
-    >
-      {items.map((item) => (
-        <article key={item.id} className="snap-start h-dvh w-full">
-          <VideoCard item={item} />
+    <section className="h-dvh w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth bg-black">
+      {initialVideos.map((video) => (
+        <article key={video.id} className="snap-start h-dvh w-full">
+          <VideoCard item={video} />
         </article>
       ))}
     </section>
