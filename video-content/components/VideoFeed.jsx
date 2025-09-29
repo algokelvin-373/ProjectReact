@@ -1,4 +1,7 @@
+"use client";
+
 import { useEffect, useMemo } from "react";
+import VideoCard from "./VideoCard";
 
 const defaultVideos = [
   {
