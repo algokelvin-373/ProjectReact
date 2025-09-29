@@ -1,15 +1,18 @@
 import { View, Text } from "@tarojs/components";
-import { useLoad } from "@tarojs/taro";
-import "./index.css";
+import Taro, { useLoad } from "@tarojs/taro";
 
 export default function Index() {
   useLoad(() => {
-    console.log("Page loaded.");
+    setTimeout(() => {
+      Taro.reLaunch({
+        url: "/pages/Login/index",
+      });
+    }, 2000);
   });
 
   return (
-    <View className="index">
-      <Text className="text-large">大家好</Text>
+    <View className="flex justify-center items-center w-full h-screen bg-[#1A2B88]">
+      <Text className="text-white text-8xl font-bold">大家好</Text>
     </View>
   );
 }

@@ -1,5 +1,5 @@
 // babel-preset-taro 更多选项和默认值：
-// https://docs.taro.zone/docs/next/babel-config
+// https://github.com/NervJS/taro/blob/next/packages/babel-preset-taro/README.md
 module.exports = {
   presets: [
     ['taro', {
