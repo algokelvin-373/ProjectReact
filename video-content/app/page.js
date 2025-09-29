@@ -1,3 +1,4 @@
+import DesktopWeb from "@/components/DesktopWeb";
 import VideoFeed from "@/components/VideoFeed";
 import { videos } from "@/lib/videos";
 
@@ -9,8 +10,18 @@ export const metadata = {
 
 export default function Home() {
   return (
-    <main className="bg-black">
-      <VideoFeed initialVideos={videos} />
+    <main className="bg-black min-h-dvh">
+      {/* Desktop layout */}
+      <div className="hidden lg:block">
+        <DesktopWeb>
+          <VideoFeed initialVideos={videos} />
+        </DesktopWeb>
+      </div>
+
+      {/* Mobile layout */}
+      <div className="lg:hidden">
+        <VideoFeed initialVideos={videos} />
+      </div>
     </main>
   );
 }
