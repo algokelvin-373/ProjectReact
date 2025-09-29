@@ -9,10 +9,13 @@ import {
   Play,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import CommentsPanel from "./CommentsPanel";
 
 export default function VideoCard({ item }) {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(item.comments);
   const [paused, setPaused] = useState(true);
   const [muted, setMuted] = useState(true);
   const [liked, setLiked] = useState(false);
@@ -162,12 +165,19 @@ export default function VideoCard({ item }) {
               <div className="text-center text-xs opacity-90">{likes}</div>
 
               <button
-                onClick={() => {}}
+                onClick={() => setIsCommentsOpen(true)}
                 className="grid place-items-center rounded-full p-3 bg-white/10 hover:bg-white/20 transition-colors"
                 aria-label="Comments"
               >
                 <MessageCircle className="h-7 w-7 text-white" />
               </button>
+              {/* Rest of code here */}
+              <CommentsPanel
+                open={isCommentsOpen}
+                onOpenChange={setIsCommentsOpen}
+                videoId={item.id}
+                onAdd={() => setCommentsCount((c) => c + 1)}
+              />
               <div className="text-center text-xs opacity-90">
                 {item.comments}
               </div>
