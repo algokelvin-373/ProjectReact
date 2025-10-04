@@ -1,0 +1,111 @@
+export const videos = [
+  {
+    id: "v1",
+    src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+    author: "@acme",
+    caption: "POV: late-night coding session vibes ✨",
+    likes: 1280,
+    comments: 76,
+    shares: 24,
+    music: "lofi - smooth beats",
+  },
+  {
+    id: "v2",
+    src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    author: "@wander",
+    caption: "Lost in the city lights 🌃",
+    likes: 842,
+    comments: 58,
+    shares: 19,
+    music: "city pop - neon night",
+  },
+  {
+    id: "v3",
+    src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+    author: "@motion",
+    caption: "Smooth transitions challenge 🎬",
+    likes: 1563,
+    comments: 132,
+    shares: 61,
+    music: "beat tape - glide",
+  },
+  {
+    id: "v4",
+    src: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+    author: "@blender",
+    caption: "Epic short film moments 🐉",
+    likes: 2203,
+    comments: 314,
+    shares: 108,
+    music: "cinematic - rise",
+  },
+];
+
+export const topickVideos = [
+  {
+    id: "t1",
+    src: "/trending-topic.jpg",
+    author: "@trending",
+    caption: "This is trending right now! 🔥",
+    music: "Viral Sound - Trending",
+    likes: 8900,
+    comments: 456,
+    shares: 234,
+  },
+  {
+    id: "t2",
+    src: "/popular-challenge.jpg",
+    author: "@challenger",
+    caption: "Join the challenge! #viral",
+    music: "Challenge Music - Challenger",
+    likes: 6700,
+    comments: 389,
+    shares: 178,
+  },
+];
+
+export const followingVideos = [
+  {
+    id: "f1",
+    src: "/friend-content.jpg",
+    author: "@friend1",
+    caption: "Check out what I've been up to! 🎉",
+    music: "Friend Vibes - Friend1",
+    likes: 450,
+    comments: 23,
+    shares: 8,
+  },
+  {
+    id: "f2",
+    src: "/following-update.jpg",
+    author: "@friend2",
+    caption: "New update from your friend 👋",
+    music: "Update Sound - Friend2",
+    likes: 320,
+    comments: 15,
+    shares: 5,
+  },
+];
+
+export const profileVideos = [
+  {
+    id: "p1",
+    src: "/my-video.jpg",
+    author: "@you",
+    caption: "My first video! 🎬",
+    music: "My Sound - You",
+    likes: 120,
+    comments: 8,
+    shares: 3,
+  },
+  {
+    id: "p2",
+    src: "/personal-content.jpg",
+    author: "@you",
+    caption: "Another day, another video 📹",
+    music: "Personal Mix - You",
+    likes: 89,
+    comments: 5,
+    shares: 2,
+  },
+];
