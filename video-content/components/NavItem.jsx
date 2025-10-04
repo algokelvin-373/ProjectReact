@@ -1,6 +1,9 @@
-export function NavItem({ icon, label, active }) {
+"use client";
+
+export function NavItem({ icon, label, active, onClick }) {
   return (
     <button
+      onClick={onClick}
       className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
         active ? "bg-white/10" : "hover:bg-white/10"
       }`}

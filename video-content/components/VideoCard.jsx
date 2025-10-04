@@ -1,3 +1,5 @@
+"use client";
+
 import usePage from "@/hooks/usePage";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -171,7 +173,6 @@ export default function VideoCard({ item }) {
               >
                 <MessageCircle className="h-7 w-7 text-white" />
               </button>
-              {/* Rest of code here */}
               <CommentsPanel
                 open={isCommentsOpen}
                 onOpenChange={setIsCommentsOpen}

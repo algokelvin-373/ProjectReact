@@ -1,37 +1,27 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+"use client";
 
-export default function usePage(options) {
+import { useEffect, useState } from "react";
+
+export default function usePage({ root = null, threshold = 0.75 }) {
+  const [node, setNode] = useState(null);
   const [inView, setInView] = useState(false);
-  const nodeRef = useRef(null);
-  const observerRef = useRef(null);
-
-  const setNode = useCallback((node) => {
-    nodeRef.current = node;
-    if (observerRef.current && node) {
-      observerRef.current.observe(node);
-    }
-  }, []);
 
   useEffect(() => {
-    if (observerRef.current) observerRef.current.disconnect();
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
         setInView(entry.isIntersecting);
       },
-      { threshold: 0.75, ...options }
+      { root, threshold }
     );
 
-    const node = nodeRef.current;
-    if (node) observerRef.current.observe(node);
+    observer.observe(node);
 
     return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-        observerRef.current = null;
-      }
+      observer.disconnect();
     };
-  }, [options]);
+  }, [node, root, threshold]);
 
   return { inView, setNode };
 }

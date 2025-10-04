@@ -3,7 +3,7 @@
 import { Home, Compass, Users, User, Smartphone, Search } from "lucide-react";
 import { NavItem } from "./NavItem";
 
-export default function DesktopWeb({ children }) {
+export default function DesktopWeb({ children, activeTab, onTabChange }) {
   return (
     <div className="min-h-dvh bg-black text-white">
       {/* Top bar */}
@@ -31,13 +31,37 @@ export default function DesktopWeb({ children }) {
           {/* Left rail */}
           <aside className="sticky top-[68px] h-[calc(100dvh-68px)] bg-neutral-900/50 border border-white/10 rounded-xl p-3">
             <nav className="flex flex-col gap-1">
-              <NavItem icon={<Smartphone />} label="Get App" active />
+              <div className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm bg-white/10">
+                <Smartphone className="h-4 w-4" />
+                <span>Get App</span>
+              </div>
               <div className="h-px my-2 bg-white/10" />
-              <NavItem icon={<Compass />} label="Topick" />
-              <NavItem icon={<Home />} label="For You" />
+
+              <NavItem
+                icon={<Compass />}
+                label="Topick"
+                active={activeTab === "topick"}
+                onClick={() => onTabChange("topick")}
+              />
+              <NavItem
+                icon={<Home />}
+                label="For You"
+                active={activeTab === "foryou"}
+                onClick={() => onTabChange("foryou")}
+              />
               <div className="h-px my-2 bg-white/10" />
-              <NavItem icon={<Users />} label="Following" />
-              <NavItem icon={<User />} label="Profile" />
+              <NavItem
+                icon={<Users />}
+                label="Following"
+                active={activeTab === "following"}
+                onClick={() => onTabChange("following")}
+              />
+              <NavItem
+                icon={<User />}
+                label="Profile"
+                active={activeTab === "profile"}
+                onClick={() => onTabChange("profile")}
+              />
             </nav>
             <div className="mt-auto text-[11px] text-white/50 px-2 pt-6">
               {"© " + new Date().getFullYear() + " Demo"}
