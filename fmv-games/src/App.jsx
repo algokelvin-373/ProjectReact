@@ -5,6 +5,8 @@ import "./App.css";
 import { useGames } from "./hooks/use-games";
 import { useFavorites } from "./hooks/use-favorites";
 import { Film, Heart, Star, Users } from "lucide-react";
+import { Card, CardContent } from "./components/ui/card";
+import { GameCard } from "./components/GameCard";
 
 function App() {
   const { games, loading } = useGames();
