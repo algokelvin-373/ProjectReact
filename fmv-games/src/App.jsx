@@ -4,6 +4,7 @@ import viteLogo from "/vite.svg";
 import "./App.css";
 import { useGames } from "./hooks/use-games";
 import { useFavorites } from "./hooks/use-favorites";
+import { Film, Heart, Star, Users } from "lucide-react";
 
 function App() {
   const { games, loading } = useGames();
