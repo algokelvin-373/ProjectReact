@@ -95,8 +95,8 @@ const App = () => {
   };
 
   return (
-    <div className="bg-blue-500 text-white p-4 rounded-lg">
-      ✅ Tailwind Berhasil!
+    <div className="bg-red-500 text-white p-10">
+      JIKA INI MERAH & PUTIH → TAILWIND BERHASIL!
     </div>
   );
 
