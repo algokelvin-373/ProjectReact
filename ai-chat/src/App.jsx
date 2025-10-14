@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Bot, User, Menu, X } from "lucide-react";
+import { Send, Bot, User, Menu, X, Plus, Clock, Save } from "lucide-react";
 
 export default function App() {
   const [inputValue, setInputValue] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [savedChats, setSavedChats] = useState([]);
+  const [currentChatId, setCurrentChatId] = useState("chat-1");
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -37,8 +39,12 @@ export default function App() {
       }),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInputValue("");
+
+    // Update current chat in saved chats
+    updateCurrentChat(newMessages);
 
     // Simulate AI response with typing delay
     setTimeout(() => {
@@ -66,7 +72,9 @@ export default function App() {
         }),
       };
 
-      setMessages((prev) => [...prev, aiMessage]);
+      const finalMessages = [...newMessages, aiMessage];
+      setMessages(finalMessages);
+      updateCurrentChat(finalMessages);
     }, 1000 + Math.random() * 2000);
   };
 
@@ -74,6 +82,72 @@ export default function App() {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage(e);
+    }
+  };
+
+  const getCurrentChatTitle = () => {
+    const currentChat = savedChats.find((chat) => chat.id === currentChatId);
+    return currentChat ? currentChat.title : "Current Chat";
+  };
+
+  const updateCurrentChat = (newMessages) => {
+    setSavedChats((prev) =>
+      prev.map((chat) =>
+        chat.id === currentChatId
+          ? {
+              ...chat,
+              messages: newMessages,
+              lastUpdated: new Date().toISOString(),
+            }
+          : chat
+      )
+    );
+  };
+
+  const createNewChat = () => {
+    const newChatId = `chat-${Date.now()}`;
+    const newChat = {
+      id: newChatId,
+      title: `New Chat ${savedChats.length + 1}`,
+      messages: [
+        {
+          id: 1,
+          text: "Hello! I'm your AI assistant. How can I help you today?",
+          sender: "ai",
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ],
+      lastUpdated: new Date().toISOString(),
+    };
+
+    setSavedChats((prev) => [...prev, newChat]);
+    setCurrentChatId(newChatId);
+    setMessages(newChat.messages);
+    setIsSidebarOpen(false);
+  };
+
+  const loadChat = (chatId) => {
+    const chat = savedChats.find((c) => c.id === chatId);
+    if (chat) {
+      setCurrentChatId(chatId);
+      setMessages(chat.messages);
+      setIsSidebarOpen(false);
+    }
+  };
+
+  const saveCurrentChat = () => {
+    // Chat is automatically saved on every message, but this function can be used for manual save
+    const chatIndex = savedChats.findIndex((chat) => chat.id === currentChatId);
+    if (chatIndex !== -1) {
+      const updatedChats = [...savedChats];
+      updatedChats[chatIndex] = {
+        ...updatedChats[chatIndex],
+        lastUpdated: new Date().toISOString(),
+      };
+      setSavedChats(updatedChats);
     }
   };
 
@@ -95,6 +169,29 @@ export default function App() {
     scrollToBottom();
   }, [messages]);
 
+  // Load saved chats from mock storage on component mount
+  useEffect(() => {
+    const mockSavedChats = [
+      {
+        id: "chat-1",
+        title: "Getting Started",
+        messages: [
+          {
+            id: 1,
+            text: "Hello! I'm your AI assistant. How can I help you today?",
+            sender: "ai",
+            timestamp: new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          },
+        ],
+        lastUpdated: new Date().toISOString(),
+      },
+    ];
+    setSavedChats(mockSavedChats);
+  }, []);
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
@@ -114,16 +211,40 @@ export default function App() {
         </div>
         <div className="p-4">
           <button
-            onClick={clearChat}
-            className="w-full mb-4 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+            onClick={createNewChat}
+            className="w-full mb-4 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
           >
-            New Chat
+            <Plus className="w-4 h-4" />
+            <span>New Chat</span>
           </button>
+
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-              Recent Chats
+            <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide flex items-center space-x-2">
+              <Clock className="w-4 h-4" />
+              <span>Saved Chats</span>
             </h3>
-            <div className="text-sm text-gray-500">No recent chats</div>
+            {savedChats.length === 0 ? (
+              <div className="text-sm text-gray-500">No saved chats</div>
+            ) : (
+              <div className="space-y-1 max-h-96 overflow-y-auto">
+                {savedChats.map((chat) => (
+                  <button
+                    key={chat.id}
+                    onClick={() => loadChat(chat.id)}
+                    className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                      currentChatId === chat.id
+                        ? "bg-blue-100 text-blue-800 font-medium"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    <div className="truncate">{chat.title}</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {new Date(chat.lastUpdated).toLocaleDateString()}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -140,11 +261,17 @@ export default function App() {
           </button>
           <div className="flex items-center space-x-2">
             <Bot className="w-6 h-6 text-blue-600" />
-            <h1 className="text-lg font-semibold text-gray-800">
-              AI Assistant
+            <h1 className="text-lg font-semibold text-gray-800 truncate max-w-xs">
+              {getCurrentChatTitle()}
             </h1>
           </div>
-          <div className="w-6"></div>
+          <button
+            onClick={saveCurrentChat}
+            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Save Chat"
+          >
+            <Save className="w-5 h-5" />
+          </button>
         </header>
 
         {/* Messages */}
