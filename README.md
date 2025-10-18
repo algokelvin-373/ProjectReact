@@ -9,10 +9,9 @@
 
 ---
 ## 🚀 Project
-1. FMV Games.
-2. Tailwindcss Test.
-3. Video Content.
-4. Weixin Train.
+1. Tailwindcss Test.
+2. Video Content.
+3. Weixin Train.
 ---
 
 ## 🛠️ Tech Stack
