@@ -13,10 +13,15 @@ Ini adalah format project yang yang dirancang khusus sebagai fondasi cepat untuk
 - Target utama: WeChat Mini Program (weapp)
 - Bisa dijalankan pada platform lain seperti H5, Alipay, dll.
 
-<h1>📦 Cara Menggunakan</h1>
+## 📦 Cara Menggunakan
+
 Run project:
+
 ```
 npm run dev:weapp
 ```
 
 # Result
+
+<img src="https://github.com/algokelvin-373/ProjectReact/blob/master/weixin-train/img/ss1.png"/>
+<img src="https://github.com/algokelvin-373/ProjectReact/blob/master/weixin-train/img/ss2.png"/>
