@@ -1,6 +1,6 @@
 {
   "miniprogramRoot": "./",
-  "projectname": "ai-facerecognition-taro",
+  "projectname": "weixin-train",
   "appid": "testAppId",
   "setting": {
     "es6": false,

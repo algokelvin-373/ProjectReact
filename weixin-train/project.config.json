@@ -1,6 +1,6 @@
 {
   "miniprogramRoot": "dist/",
-  "projectname": "ai-facerecognition-taro",
+  "projectname": "weixin-train",
   "description": "",
   "appid": "touristappid",
   "setting": {

@@ -18,9 +18,7 @@ const LoginPage = () => {
   return (
     <View className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-6 flex flex-col items-center justify-center">
       {/* Title */}
-      <Text className="text-xl font-large text-black mb-6">
-        Login to your Account
-      </Text>
+      <Text className="text-xl text-black mb-6">Login to your Account</Text>
 
       {/* Form */}
       <View className="w-full max-w-md space-y-4">
@@ -49,7 +47,7 @@ const LoginPage = () => {
           onClick={handleLogin}
           className="w-full py-3 my-3 bg-blue-700 rounded-lg shadow hover:bg-blue-800 transition-colors"
         >
-          <Text className="text-[20px] text-white font-medium">Sign In</Text>
+          <Text className="text-xl text-white font-medium">Sign In</Text>
         </Button>
       </View>
 

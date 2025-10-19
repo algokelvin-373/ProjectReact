@@ -14,5 +14,9 @@ Ini adalah format project yang yang dirancang khusus sebagai fondasi cepat untuk
 - Bisa dijalankan pada platform lain seperti H5, Alipay, dll.
 
 <h1>📦 Cara Menggunakan</h1>
-...
-...
+Run project:
+```
+npm run dev:weapp
+```
+
+# Result
