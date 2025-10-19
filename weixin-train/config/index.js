@@ -5,7 +5,7 @@ import prodConfig from "./prod";
 // https://taro-docs.jd.com/docs/next/config#defineconfig-辅助函数
 export default defineConfig(async (merge, { command, mode }) => {
   const baseConfig = {
-    projectName: "ai-facerecognition-taro",
+    projectName: "weixin-train",
     date: "2025-9-18",
     designWidth: 750,
     deviceRatio: {
