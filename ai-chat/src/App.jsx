@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Send, FileText, SpellCheck, RotateCcw, Copy } from "lucide-react";
+import { icLogo } from "../public";
 
 const App = () => {
   const [activeService, setActiveService] = useState("summarize");
@@ -89,7 +90,7 @@ const App = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <FileText className="w-6 h-6 text-white" />
+                <img src={icLogo} className="w-10 h-10 text-white rounded-lg" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
