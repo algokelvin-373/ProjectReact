@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Send,
   FileText,
@@ -10,10 +10,12 @@ import {
   Mail,
   Eye,
   EyeOff,
+  Brain,
+  CheckCircle,
 } from "lucide-react";
 
 const App = () => {
-  const [activeView, setActiveView] = useState("login"); // 'login', 'register', 'main'
+  const [currentView, setCurrentView] = useState("splash"); // 'splash', 'login', 'register', 'main'
   const [activeService, setActiveService] = useState("summarize");
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
@@ -30,8 +32,18 @@ const App = () => {
   const [registerError, setRegisterError] = useState("");
   const [loginSuccess, setLoginSuccess] = useState("");
 
-  // Mock user storage (in real app, this would be handled by backend)
+  // Mock user storage
   const mockUsers = [{ email: "user@example.com", password: "password123" }];
+
+  // Splash screen effect
+  useEffect(() => {
+    if (currentView === "splash") {
+      const timer = setTimeout(() => {
+        setCurrentView("login");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [currentView]);
 
   // Mock AI processing functions
   const summarizeText = (text) => {
@@ -80,7 +92,7 @@ const App = () => {
     if (user) {
       setLoginSuccess("Login successful!");
       setTimeout(() => {
-        setActiveView("main");
+        setCurrentView("main");
         setLoginSuccess("");
       }, 1500);
     } else {
@@ -107,10 +119,9 @@ const App = () => {
       return;
     }
 
-    // In real app, this would save to database
     mockUsers.push({ email, password });
     setRegisterError("");
-    setActiveView("login");
+    setCurrentView("login");
   };
 
   const handleProcess = async () => {
@@ -145,13 +156,49 @@ const App = () => {
   };
 
   const handleLogout = () => {
-    setActiveView("login");
+    setCurrentView("login");
     setInputText("");
     setOutputText("");
     setEmail("");
     setPassword("");
     setConfirmPassword("");
   };
+
+  // Splash Screen Component
+  const SplashScreen = () => (
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 flex items-center justify-center">
+      <div className="text-center">
+        <div className="relative mb-8">
+          <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <Brain className="w-12 h-12 text-white" />
+          </div>
+          <div className="absolute -inset-2 bg-blue-400/30 rounded-full blur-xl animate-ping"></div>
+        </div>
+        <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+          Web AI Chat
+        </h1>
+        <p className="text-xl text-blue-100 mb-8 max-w-md mx-auto">
+          Intelligent text processing powered by artificial intelligence
+        </p>
+        <div className="flex justify-center space-x-4">
+          <div className="flex items-center space-x-2 text-blue-200">
+            <CheckCircle className="w-5 h-5 text-green-300" />
+            <span className="text-sm">Text Summarization</span>
+          </div>
+          <div className="flex items-center space-x-2 text-blue-200">
+            <CheckCircle className="w-5 h-5 text-green-300" />
+            <span className="text-sm">Grammar & Spelling</span>
+          </div>
+        </div>
+        <div className="mt-12">
+          <div className="w-16 h-1 bg-white/30 rounded-full mx-auto">
+            <div className="w-1/3 h-full bg-white rounded-full animate-pulse"></div>
+          </div>
+          <p className="text-blue-200 text-sm mt-2">Loading...</p>
+        </div>
+      </div>
+    </div>
+  );
 
   // Login/Register Form Component
   const AuthForm = () => (
@@ -162,10 +209,10 @@ const App = () => {
             <FileText className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {activeView === "login" ? "Welcome Back" : "Create Account"}
+            {currentView === "login" ? "Welcome Back" : "Create Account"}
           </h1>
           <p className="text-gray-600">
-            {activeView === "login"
+            {currentView === "login"
               ? "Sign in to access AI text processing"
               : "Join to unlock powerful AI features"}
           </p>
@@ -190,7 +237,7 @@ const App = () => {
         )}
 
         <form
-          onSubmit={activeView === "login" ? handleLogin : handleRegister}
+          onSubmit={currentView === "login" ? handleLogin : handleRegister}
           className="space-y-6"
         >
           <div>
@@ -250,7 +297,7 @@ const App = () => {
             </div>
           </div>
 
-          {activeView === "register" && (
+          {currentView === "register" && (
             <div>
               <label
                 htmlFor="confirmPassword"
@@ -290,22 +337,22 @@ const App = () => {
             type="submit"
             className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
           >
-            {activeView === "login" ? "Sign In" : "Create Account"}
+            {currentView === "login" ? "Sign In" : "Create Account"}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-gray-600">
-            {activeView === "login"
+            {currentView === "login"
               ? "Don't have an account?"
               : "Already have an account?"}
             <button
               onClick={() =>
-                setActiveView(activeView === "login" ? "register" : "login")
+                setCurrentView(currentView === "login" ? "register" : "login")
               }
               className="ml-2 text-blue-600 hover:text-blue-700 font-medium"
             >
-              {activeView === "login" ? "Sign up" : "Sign in"}
+              {currentView === "login" ? "Sign up" : "Sign in"}
             </button>
           </p>
         </div>
@@ -535,7 +582,9 @@ const App = () => {
   );
 
   // Render based on current view
-  if (activeView === "login" || activeView === "register") {
+  if (currentView === "splash") {
+    return <SplashScreen />;
+  } else if (currentView === "login" || currentView === "register") {
     return <AuthForm />;
   }
 
