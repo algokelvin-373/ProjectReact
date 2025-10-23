@@ -1,4 +1,3 @@
-// src/pages/Splash.jsx
 import React from "react";
 import { Sparkles } from "lucide-react";
 
