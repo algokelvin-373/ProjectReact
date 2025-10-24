@@ -1,5 +1,6 @@
 import { FileText, Lock, Mail, Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
+import { icLogo } from "../assets";
 
 export default function Login() {
   const [currentView, setCurrentView] = useState("login");
@@ -69,11 +70,12 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-md p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/5"></div>
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-md p-8 relative z-10">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FileText className="w-8 h-8 text-white" />
+            <img src={icLogo} className="rounded-xl" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             {currentView === "login" ? "Welcome Back" : "Create Account"}
