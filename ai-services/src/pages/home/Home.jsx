@@ -18,11 +18,6 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const [history, setHistory] = useState([]);
 
-  // Mock user storage
-  const mockUsers = [
-    { email: "user@example.com", password: "password123", id: "user1" },
-  ];
-
   // Load history from localStorage on component mount
   useEffect(() => {
     const savedHistory = localStorage.getItem("aiChatHistory");
@@ -92,52 +87,6 @@ export default function Home() {
       userEmail: currentUser?.email || "guest@example.com",
     };
     setHistory((prev) => [newEntry, ...prev]);
-  };
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    setLoginError("");
-    setLoginSuccess("");
-
-    const user = mockUsers.find(
-      (u) => u.email === email && u.password === password
-    );
-    if (user) {
-      setCurrentUser(user);
-      setLoginSuccess("Login successful!");
-      setTimeout(() => {
-        setCurrentView("main");
-        setLoginSuccess("");
-      }, 1500);
-    } else {
-      setLoginError("Invalid email or password");
-    }
-  };
-
-  const handleRegister = (e) => {
-    e.preventDefault();
-    setRegisterError("");
-
-    if (password !== confirmPassword) {
-      setRegisterError("Passwords do not match");
-      return;
-    }
-
-    if (password.length < 6) {
-      setRegisterError("Password must be at least 6 characters");
-      return;
-    }
-
-    if (mockUsers.find((u) => u.email === email)) {
-      setRegisterError("Email already registered");
-      return;
-    }
-
-    const newUser = { email, password, id: `user${mockUsers.length + 1}` };
-    mockUsers.push(newUser);
-    setCurrentUser(newUser);
-    setRegisterError("");
-    setCurrentView("main");
   };
 
   const handleProcess = async () => {

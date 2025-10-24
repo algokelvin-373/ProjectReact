@@ -1,10 +1,12 @@
-import { FileText, Lock, Mail, Eye, EyeOff } from "lucide-react";
+import { Lock, Mail, Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { icLogo } from "../assets";
+import { useNavigate } from "react-router-dom";
 
 const USERS_KEY = "web_ai_chat_users";
 
 export default function Login() {
+  const navigate = useNavigate();
   const [currentView, setCurrentView] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -68,7 +70,17 @@ export default function Login() {
     );
     if (user) {
       localStorage.setItem("web_ai_chat_current_user", JSON.stringify(user));
-      setDialog({ show: true, type: "success", message: "Login successful!" });
+      const timer = setTimeout(() => {
+        setDialog({
+          show: true,
+          type: "success",
+          message: "Login successful!",
+        });
+        if (dialog.type === "success") {
+          navigate("/home", { replace: true });
+        }
+      }, 1500);
+      return () => clearTimeout(timer);
     } else {
       setDialog({
         show: true,
