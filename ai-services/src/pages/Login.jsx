@@ -2,7 +2,7 @@ import { FileText, Lock, Mail, Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { icLogo } from "../assets";
 
-const USERS_KEY = "web_ai_chat_users"; // key untuk localStorage
+const USERS_KEY = "web_ai_chat_users";
 
 export default function Login() {
   const [currentView, setCurrentView] = useState("login");
@@ -15,22 +15,48 @@ export default function Login() {
   const [registerError, setRegisterError] = useState("");
   const [loginSuccess, setLoginSuccess] = useState("");
 
-  // 🔁 Baca users dari localStorage atau gunakan default
+  // ✅ State untuk dialog status
+  const [dialog, setDialog] = useState({
+    show: false,
+    type: "success",
+    message: "",
+  });
+
   const [users, setUsers] = useState(() => {
     const saved = localStorage.getItem(USERS_KEY);
-    if (saved) {
-      return JSON.parse(saved);
-    }
-    // Data awal (fallback)
+    if (saved) return JSON.parse(saved);
     return [
       { email: "user@example.com", password: "password123", id: "user1" },
     ];
   });
 
-  // 🔁 Simpan users ke localStorage setiap kali berubah
   useEffect(() => {
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
   }, [users]);
+
+  // ✅ Auto-hide dialog setelah 1500ms
+  useEffect(() => {
+    if (dialog.show) {
+      const timer = setTimeout(() => {
+        setDialog({ show: false, type: "success", message: "" });
+        // Jika dari register sukses, pindah ke login & reset form
+        if (dialog.type === "success" && currentView === "register") {
+          setCurrentView("login");
+          setEmail("");
+          setPassword("");
+          setConfirmPassword("");
+        }
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [dialog, currentView]);
+
+  // Reset error/success saat ganti view
+  useEffect(() => {
+    setLoginError("");
+    setRegisterError("");
+    setLoginSuccess("");
+  }, [currentView]);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -41,15 +67,14 @@ export default function Login() {
       (u) => u.email === email && u.password === password
     );
     if (user) {
-      // Opsional: simpan user yang sedang login
       localStorage.setItem("web_ai_chat_current_user", JSON.stringify(user));
-      setLoginSuccess("Login successful!");
-      setTimeout(() => {
-        setCurrentView("main");
-        setLoginSuccess("");
-      }, 1500);
+      setDialog({ show: true, type: "success", message: "Login successful!" });
     } else {
-      setLoginError("Invalid email or password");
+      setDialog({
+        show: true,
+        type: "error",
+        message: "Invalid email or password",
+      });
     }
   };
 
@@ -58,35 +83,84 @@ export default function Login() {
     setRegisterError("");
 
     if (password !== confirmPassword) {
-      setRegisterError("Passwords do not match");
+      setDialog({
+        show: true,
+        type: "error",
+        message: "Passwords do not match",
+      });
       return;
     }
 
     if (password.length < 6) {
-      setRegisterError("Password must be at least 6 characters");
+      setDialog({
+        show: true,
+        type: "error",
+        message: "Password must be at least 6 characters",
+      });
       return;
     }
 
     if (users.find((u) => u.email === email)) {
-      setRegisterError("Email already registered");
+      setDialog({
+        show: true,
+        type: "error",
+        message: "Email already registered",
+      });
       return;
     }
 
     const newUser = {
       email,
-      password, // ⚠️ Di aplikasi nyata, jangan simpan password mentah!
-      id: `user${Date.now()}`, // ID unik
+      password,
+      id: `user_${Date.now()}`,
     };
 
     setUsers((prev) => [...prev, newUser]);
-    setRegisterError("");
-    setCurrentView("login"); // Alihkan ke login setelah register
+    setDialog({
+      show: true,
+      type: "success",
+      message: "Account created successfully!",
+    });
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/5"></div>
+
+      {/* ✅ Dialog Status Overlay */}
+      {dialog.show && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30 backdrop-blur-sm">
+          <div
+            className={`text-center p-6 rounded-2xl shadow-xl max-w-xs w-full mx-4 animate-fade-in ${
+              dialog.type === "success"
+                ? "bg-green-50 border border-green-200"
+                : "bg-red-50 border border-red-200"
+            }`}
+          >
+            <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+              {dialog.type === "success" ? (
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center animate-pop-in">
+                  ✅
+                </div>
+              ) : (
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center animate-pop-in">
+                  ❌
+                </div>
+              )}
+            </div>
+            <p
+              className={`text-lg font-medium ${
+                dialog.type === "success" ? "text-green-700" : "text-red-700"
+              }`}
+            >
+              {dialog.message}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-md p-8 relative z-10">
+        {/* ... bagian header logo & judul tetap sama ... */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <img src={icLogo} className="w-8 h-8 rounded-xl" alt="Logo" />
@@ -101,28 +175,13 @@ export default function Login() {
           </p>
         </div>
 
-        {loginSuccess && (
-          <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-sm">
-            {loginSuccess}
-          </div>
-        )}
-
-        {loginError && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-            {loginError}
-          </div>
-        )}
-
-        {registerError && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-            {registerError}
-          </div>
-        )}
+        {/* ❌ Hapus blok loginSuccess, loginError, registerError karena diganti dialog */}
 
         <form
           onSubmit={currentView === "login" ? handleLogin : handleRegister}
           className="space-y-6"
         >
+          {/* ... input email, password, confirmPassword tetap sama ... */}
           <div>
             <label
               htmlFor="email"
@@ -240,6 +299,39 @@ export default function Login() {
           </p>
         </div>
       </div>
+
+      {/* ✅ Animasi CSS untuk dialog */}
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        @keyframes pop-in {
+          0% {
+            transform: scale(0);
+            opacity: 0;
+          }
+          70% {
+            transform: scale(1.1);
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+        }
+        .animate-pop-in {
+          animation: pop-in 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+        }
+      `}</style>
     </div>
   );
 }
