@@ -2,6 +2,8 @@ import { FileText, Lock, Mail, Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { icLogo } from "../assets";
 
+const USERS_KEY = "web_ai_chat_users"; // key untuk localStorage
+
 export default function Login() {
   const [currentView, setCurrentView] = useState("login");
   const [email, setEmail] = useState("");
@@ -13,26 +15,34 @@ export default function Login() {
   const [registerError, setRegisterError] = useState("");
   const [loginSuccess, setLoginSuccess] = useState("");
 
-  // Mock user storage
-  const mockUsers = [
-    { email: "user@example.com", password: "password123", id: "user1" },
-  ];
+  // 🔁 Baca users dari localStorage atau gunakan default
+  const [users, setUsers] = useState(() => {
+    const saved = localStorage.getItem(USERS_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    // Data awal (fallback)
+    return [
+      { email: "user@example.com", password: "password123", id: "user1" },
+    ];
+  });
 
-  // Save history to localStorage whenever it changes
+  // 🔁 Simpan users ke localStorage setiap kali berubah
   useEffect(() => {
-    localStorage.setItem("aiChatHistory", JSON.stringify(history));
-  }, [history]);
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  }, [users]);
 
   const handleLogin = (e) => {
     e.preventDefault();
     setLoginError("");
     setLoginSuccess("");
 
-    const user = mockUsers.find(
+    const user = users.find(
       (u) => u.email === email && u.password === password
     );
     if (user) {
-      setCurrentUser(user);
+      // Opsional: simpan user yang sedang login
+      localStorage.setItem("web_ai_chat_current_user", JSON.stringify(user));
       setLoginSuccess("Login successful!");
       setTimeout(() => {
         setCurrentView("main");
@@ -57,16 +67,20 @@ export default function Login() {
       return;
     }
 
-    if (mockUsers.find((u) => u.email === email)) {
+    if (users.find((u) => u.email === email)) {
       setRegisterError("Email already registered");
       return;
     }
 
-    const newUser = { email, password, id: `user${mockUsers.length + 1}` };
-    mockUsers.push(newUser);
-    setCurrentUser(newUser);
+    const newUser = {
+      email,
+      password, // ⚠️ Di aplikasi nyata, jangan simpan password mentah!
+      id: `user${Date.now()}`, // ID unik
+    };
+
+    setUsers((prev) => [...prev, newUser]);
     setRegisterError("");
-    setCurrentView("main");
+    setCurrentView("login"); // Alihkan ke login setelah register
   };
 
   return (
@@ -75,7 +89,7 @@ export default function Login() {
       <div className="bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-md p-8 relative z-10">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <img src={icLogo} className="rounded-xl" />
+            <img src={icLogo} className="w-8 h-8 rounded-xl" alt="Logo" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             {currentView === "login" ? "Welcome Back" : "Create Account"}
