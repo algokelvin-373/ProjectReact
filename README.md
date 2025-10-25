@@ -9,9 +9,9 @@
 
 ---
 ## 🚀 Project
-1. Tailwindcss Test.
-2. Video Content.
-3. Weixin Train.
+1. [Tailwindcss Test](https://github.com/algokelvin-373/ProjectReact/tree/master/tailwindcss-test)
+2. [Video Content](https://github.com/algokelvin-373/ProjectReact/tree/master/video-content)
+3. [Weixin Train](https://github.com/algokelvin-373/ProjectReact/tree/master/weixin-train)
 ---
 
 ## 🛠️ Tech Stack
