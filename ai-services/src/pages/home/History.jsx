@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Clock, Trash2, ChevronLeft } from "lucide-react";
+import { useEffect, useState } from "react";
+import { FileText, SpellCheck, Clock, Trash2, ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function History() {
@@ -10,6 +10,49 @@ export default function History() {
   const userHistory = history.filter((item) =>
     currentUser ? item.userEmail === currentUser.email : true
   );
+
+  // Get service icon
+  const getServiceIcon = (serviceType) => {
+    if (serviceType === "summarize") {
+      return <FileText className="w-4 h-4 text-blue-600" />;
+    }
+    return <SpellCheck className="w-4 h-4 text-purple-600" />;
+  };
+
+  // Get service name
+  const getServiceName = (serviceType) => {
+    return serviceType === "summarize"
+      ? "Text Summarize"
+      : "Grammar & Spelling";
+  };
+
+  // Format timestamp for display
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+  };
+
+  const deleteHistoryItem = (id) => {
+    setHistory((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  // Load history from localStorage on component mount
+  useEffect(() => {
+    const savedHistory = localStorage.getItem("aiChatHistory");
+    if (savedHistory) {
+      setHistory(JSON.parse(savedHistory));
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
