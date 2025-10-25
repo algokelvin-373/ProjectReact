@@ -1,4 +1,9 @@
+import { useState } from "react";
+import { Clock, Trash2, ChevronLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 export default function History() {
+  const navigate = useNavigate();
   const [history, setHistory] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
 
@@ -14,24 +19,11 @@ export default function History() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <button
-                onClick={() => setCurrentView("main")}
+                onClick={() => navigate(-1)}
                 className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
               >
                 <ChevronLeft className="w-5 h-5" />
                 <span className="font-medium">Back to Main</span>
-              </button>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500">
-                <Clock className="w-4 h-4" />
-                <span>History</span>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <User className="w-4 h-4" />
-                <span>Logout</span>
               </button>
             </div>
           </div>
@@ -64,7 +56,7 @@ export default function History() {
               Process some text to see your history here
             </p>
             <button
-              onClick={() => setCurrentView("main")}
+              onClick={() => navigate(-1)}
               className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all"
             >
               Go to Main

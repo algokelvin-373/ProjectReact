@@ -9,8 +9,10 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { icLogo } from "../../assets";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
+  const navigate = useNavigate();
   const [currentView, setCurrentView] = useState("main");
   const [activeService, setActiveService] = useState("summarize");
   const [inputText, setInputText] = useState("");
@@ -189,7 +191,7 @@ export default function Home() {
             </div>
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => setCurrentView("history")}
+                onClick={() => navigate("/history")}
                 className="flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors"
               >
                 <Clock className="w-4 h-4 text-gray-600" />
