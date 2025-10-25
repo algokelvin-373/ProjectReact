@@ -8,6 +8,7 @@ import {
   Clock,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { icLogo } from "../../assets";
 
 export default function Home() {
   const [currentView, setCurrentView] = useState("main");
@@ -173,16 +174,14 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <FileText className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 flex items-center justify-center">
+                <img src={icLogo} className="rounded-lg" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  Web AI Chat
+                  AI Services
                 </h1>
-                <p className="text-sm text-gray-600">
-                  AI-powered text processing
-                </p>
+                <p className="text-sm text-gray-600">AI powered for services</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -348,7 +347,7 @@ export default function Home() {
         {/* Features Section */}
         <div className="mt-12 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
           <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">
-            AI-Powered Features
+            AI Powered for Services
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="text-center p-6 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100">
@@ -385,9 +384,9 @@ export default function Home() {
       <footer className="bg-white border-t border-gray-200 mt-16">
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="text-center text-gray-500 text-sm">
-            <p>Web AI Chat - Powered by React, Tailwind CSS, and Vite</p>
+            <p>AI Services</p>
             <p className="mt-1">
-              Note: This is a demo application with mock AI processing.
+              Copyright by @AlgoKelvinTech <br></br>Version 1.0.0
             </p>
           </div>
         </div>

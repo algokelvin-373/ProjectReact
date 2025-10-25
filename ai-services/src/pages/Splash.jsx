@@ -7,7 +7,12 @@ export default function Splash() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigate("/login", { replace: true });
+      const isLogin = localStorage.getItem("isLogin");
+      if (isLogin === "1") {
+        navigate("/home", { replace: true });
+      } else {
+        navigate("/login", { replace: true });
+      }
     }, 5000);
     return () => clearTimeout(timer);
   }, [navigate]);

@@ -77,6 +77,7 @@ export default function Login() {
           message: "Login successful!",
         });
         if (dialog.type === "success") {
+          localStorage.setItem("isLogin", "1");
           navigate("/home", { replace: true });
         }
       }, 1500);
