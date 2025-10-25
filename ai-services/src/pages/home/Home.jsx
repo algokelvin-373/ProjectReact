@@ -17,7 +17,10 @@ export default function Home() {
   const [outputText, setOutputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // History state
   const [history, setHistory] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
 
   // Load history from localStorage on component mount
   useEffect(() => {
