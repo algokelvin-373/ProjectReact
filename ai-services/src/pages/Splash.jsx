@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles } from "lucide-react";
+import styles from "../components/animations/splash.module.css";
 
 export default function Splash() {
   const navigate = useNavigate();
@@ -28,10 +29,12 @@ export default function Splash() {
           </div>
           <div className="absolute -inset-4 bg-blue-400/20 rounded-full blur-xl animate-ping"></div>
         </div>
-        <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 animate-fade-in">
+        <h1
+          className={`text-4xl md:text-6xl font-bold text-white mb-4 ${styles["fade-in"]}`}
+        >
           Web AI Chat
         </h1>
-        <p className="text-xl text-blue-100 mb-8 animate-fade-in-delay">
+        <p className={`text-xl text-blue-100 mb-8 ${styles["fade-in-delay"]}`}>
           Powered by Artificial Intelligence
         </p>
         <div className="flex justify-center space-x-2">
@@ -46,35 +49,6 @@ export default function Splash() {
           ></div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes fade-in-delay {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fade-in {
-          animation: fade-in 1s ease-out;
-        }
-        .animate-fade-in-delay {
-          animation: fade-in-delay 1s ease-out 0.3s both;
-        }
-      `}</style>
     </div>
   );
 }
