@@ -102,4 +102,4 @@ npm run dev
 ```
 
 ## Result
-<img src="[https://github.com/algokelvin-373/ProjectReact/tree/master/tailwindcss-test/ss/SS_1.png](https://github.com/algokelvin-373/ProjectReact/blob/master/tailwindcss-test/ss/SS_1.png)"/>
+<img src="https://github.com/algokelvin-373/ProjectReact/blob/master/tailwindcss-test/ss/SS_1.png"/>
