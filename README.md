@@ -14,7 +14,6 @@ Kumpulan Project Website dengan React Javascript.
 
 Berikut adalah daftar project yang tersedia dalam repositori ini:
 
-- **[AI Services](https://github.com/algokelvin-373/ProjectReact/tree/master/ai-services)** - Project terkait layanan AI.
 - **[Tailwindcss Test](https://github.com/algokelvin-373/ProjectReact/tree/master/tailwindcss-test)** - Project untuk pengujian dan eksplorasi Tailwind CSS.
 - **[Video Content](https://github.com/algokelvin-373/ProjectReact/tree/master/video-content)** - Project yang berkaitan dengan konten video.
 - **[Weixin Train](https://github.com/algokelvin-373/ProjectReact/tree/master/weixin-train)** - Project pelatihan atau aplikasi terkait Weixin.
