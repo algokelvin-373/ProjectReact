@@ -1,4 +1,3 @@
-```markdown
 # Project React — Version 1.0.0
 
 Kumpulan Project Website dengan React Javascript.
@@ -50,4 +49,3 @@ Untuk menjalankan salah satu project:
 Semua kontribusi sangat dihargai! Jika Anda ingin menambahkan project baru atau memperbaiki yang sudah ada, silakan buat pull request.
 
 ---
-```
