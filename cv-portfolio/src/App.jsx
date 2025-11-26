@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import html2pdf from "html2pdf.js";
 import {
   Download,
   Github,
@@ -12,7 +13,22 @@ import {
 } from "lucide-react";
 
 const App = () => {
-  const [activeSection, setActiveSection] = useState("about");
+  const cvRef = useRef(null);
+
+  const handleDownloadCV = () => {
+    const element = cvRef.current;
+    if (!element) return;
+
+    const opt = {
+      margin: 10,
+      filename: "Alex_Johnson_CV.pdf",
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { orientation: "portrait", unit: "mm", format: "a4" },
+    };
+
+    html2pdf().set(opt).from(element).save();
+  };
 
   const personalInfo = {
     name: "Alex Johnson",
@@ -135,38 +151,25 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Header/Navigation */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-bold text-gray-800">
-              {personalInfo.name}
-            </h1>
-            <p className="text-sm text-gray-600">{personalInfo.title}</p>
+      <div ref={cvRef} className="w-full">
+        {/* Header - Simplified without navigation */}
+        <header className="bg-white shadow-sm sticky top-0 z-50">
+          <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div>
+              <h1 className="text-xl font-bold text-gray-800">
+                {personalInfo.name}
+              </h1>
+              <p className="text-sm text-gray-600">{personalInfo.title}</p>
+            </div>
+            <button 
+              onClick={handleDownloadCV}
+              className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Download size={18} />
+              <span>Resume</span>
+            </button>
           </div>
-          <nav className="hidden md:flex space-x-6">
-            {["about", "experience", "projects", "education", "contact"].map(
-              (section) => (
-                <button
-                  key={section}
-                  onClick={() => setActiveSection(section)}
-                  className={`capitalize px-3 py-2 rounded-lg transition-colors ${
-                    activeSection === section
-                      ? "bg-blue-100 text-blue-700"
-                      : "text-gray-600 hover:text-blue-600"
-                  }`}
-                >
-                  {section}
-                </button>
-              )
-            )}
-          </nav>
-          <button className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-            <Download size={18} />
-            <span>Resume</span>
-          </button>
-        </div>
-      </header>
+        </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         {/* Hero Section */}
@@ -394,6 +397,7 @@ const App = () => {
           </p>
         </div>
       </footer>
+      </div>
     </div>
   );
 };
