@@ -110,7 +110,7 @@
 :root[data-theme="light"] {
   --bg: linear-gradient(to bottom right, #eef2ff 0%, #fdfcff 100%);
   --card-bg: #ffffff;
-  --header-bg: rgba(255,255,255,0.8);
+  --header-bg: rgba(255, 255, 255, 0.8);
   --text-primary: #0f172a; /* gray-900 */
   --text-muted: #475569; /* gray-600 */
   --accent-1: #6366f1; /* indigo-500 */
@@ -120,7 +120,7 @@
 :root[data-theme="dark"] {
   --bg: linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
   --card-bg: #0b1220;
-  --header-bg: rgba(15,23,42,0.6);
+  --header-bg: rgba(15, 23, 42, 0.6);
   --text-primary: #e6eef8; /* soft light */
   --text-muted: #9ca3af; /* gray-400 */
   --accent-1: #7c3aed; /* purple-600 */

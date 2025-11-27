@@ -27,7 +27,10 @@ const App = () => {
   const { theme, toggle } = useTheme();
 
   return (
-    <div data-theme={theme} className="min-h-screen app-bg bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div
+      data-theme={theme}
+      className="min-h-screen app-bg bg-gradient-to-br from-indigo-50 via-white to-purple-50"
+    >
       <div ref={cvRef} className="w-full">
         {/* Header - Enhanced Design */}
         <header className="header-bg backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-indigo-100">
@@ -101,9 +104,7 @@ const App = () => {
                 <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center mb-3">
                   <MapPin className="text-white" size={24} />
                 </div>
-                <p className="text-xs text-muted font-medium mb-1">
-                  Location
-                </p>
+                <p className="text-xs text-muted font-medium mb-1">Location</p>
                 <p className="text-sm font-semibold text-primary truncate">
                   {personalInfo.location}
                 </p>
@@ -112,9 +113,7 @@ const App = () => {
                 <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 flex items-center justify-center mb-3">
                   <Linkedin className="text-white" size={24} />
                 </div>
-                <p className="text-xs text-muted font-medium mb-1">
-                  LinkedIn
-                </p>
+                <p className="text-xs text-muted font-medium mb-1">LinkedIn</p>
                 <p className="text-sm font-semibold text-primary truncate">
                   {personalInfo.linkedin}
                 </p>
@@ -124,7 +123,9 @@ const App = () => {
                   <Github className="text-white" size={24} />
                 </div>
                 <p className="text-xs text-muted font-medium mb-1">GitHub</p>
-                <p className="text-sm font-semibold text-primary truncate">{personalInfo.github}</p>
+                <p className="text-sm font-semibold text-primary truncate">
+                  {personalInfo.github}
+                </p>
               </div>
             </div>
           </section>
@@ -331,7 +332,8 @@ const App = () => {
               © 2025 {personalInfo.name}. All rights reserved.
             </p>
             <p className="text-muted text-sm mt-2">
-              Crafted with <span className="text-red-500">❤</span> by {personalInfo.name}
+              Crafted with <span className="text-red-500">❤</span> by{" "}
+              {personalInfo.name}
             </p>
           </div>
         </footer>
