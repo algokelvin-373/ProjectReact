@@ -1,11 +1,13 @@
 # ProjectReact AI Coding Instructions
 
 ## Repository Overview
+
 **ProjectReact** is a monorepo containing four distinct React-based web projects on the `production/v1.0.0` branch. Each project uses different frameworks and serves different purposes.
 
 ## Project Breakdown
 
 ### 1. **cv-portfolio** (Vite + React)
+
 - **Purpose**: Single-page portfolio/CV application for Alex Johnson
 - **Tech Stack**: React 18, Vite, Tailwind CSS v3, lucide-react icons
 - **Key Features**: Tabbed interface (about, experience, projects, education, contact), sticky header navigation
@@ -14,6 +16,7 @@
 - **Pattern**: Monolithic component (`App.jsx` contains all sections with state-driven visibility via `activeSection`)
 
 ### 2. **video-content** (Next.js 15 + React 19)
+
 - **Purpose**: TikTok/Douyin-like short-form video feed
 - **Tech Stack**: Next.js 15, React 19, Tailwind CSS v4, lucide-react, vaul (drawer UI)
 - **Key Features**: Responsive layouts (desktop grid + mobile vertical), video player with mute/pause control, comments panel with localStorage persistence, desktop web sidebar navigation
@@ -24,6 +27,7 @@
 - **Components**: `VideoCard`, `VideoFeed`, `CommentsPanel`, `DesktopWeb`, `NavItem`
 
 ### 3. **weixin-train** (Taro.js + React + Redux)
+
 - **Purpose**: WeChat Mini Program (weapp) template with optional H5/Alipay/TikTok platform support
 - **Tech Stack**: Taro.js 4.1.5, React, Redux (with redux-logger, redux-thunk), Sass, Tailwind CSS (with `weapp-tw` patch)
 - **Architecture**: Redux store with reducer pattern; Pages: splash screen → login flow
@@ -33,6 +37,7 @@
 - **Note**: Uses Taro's component library (not standard React DOM) for cross-platform compatibility
 
 ### 4. **tailwindcss-test** (Vite + React)
+
 - **Purpose**: Minimal project for testing/learning Tailwind CSS v3 setup
 - **Tech Stack**: React 19, Vite, Tailwind CSS v3
 - **Build Command**: `npm run dev`
@@ -42,127 +47,57 @@
 
 ## Critical Development Workflows
 
-### Installation & Development
-```bash
-# Install dependencies per project
-cd <project-folder> && npm install
+## .github/copilot-instructions.md — concise agent guide
 
-# Start dev server (varies by framework)
-# Vite projects: npm run dev
-# Next.js: npm run dev
-# Taro (weapp): npm run dev:weapp
-# Taro (h5): npm run dev:h5
-```
+Goal: get an AI coding agent productive fast in this monorepo (four independent projects). Inspect referenced files first, then run the dev script for the target project.
 
-### Linting
-- **cv-portfolio & tailwindcss-test**: `npm run lint` (ESLint v9 with React Refresh rules)
-- **video-content**: `npm run lint` (Next.js ESLint)
-- **weixin-train**: No lint script defined (ESLint config exists as `eslintrc.js`)
+- **Repo shape:** `cv-portfolio/`, `video-content/`, `weixin-train/`, `tailwindcss-test/` — each is an independent project with its own `package.json`.
 
-### Building for Production
-```bash
-# Vite/Next projects
-npm run build
+- **Quick dev commands (PowerShell)**
 
-# Taro targets (weixin-train)
-npm run build:weapp  # WeChat
-npm run build:h5    # Web
-npm run build:alipay # Alipay
-# ... other platforms
-```
+  - `cd cv-portfolio; npm install; npm run dev`
+  - `cd video-content; npm install; npm run dev`
+  - `cd weixin-train; npm install; npm run dev:h5` (or `npm run dev:weapp` for WeChat)
+  - `cd tailwindcss-test; npm install; npm run dev`
 
----
+- **High-value files to read first**
 
-## Code Patterns & Conventions
+  - `cv-portfolio/src/App.jsx` — single-file SPA and `activeSection` pattern.
+  - `video-content/lib/videos.js` — mock video data and categories.
+  - `video-content/hooks/usePage.js` — IntersectionObserver controlling video playback (threshold 0.75).
+  - `video-content/components/VideoFeed.jsx`, `VideoCard.jsx`, `CommentsPanel.jsx` — UI + video interactions.
+  - `video-content/lib/commentsStore.js` — localStorage API for comments.
+  - `weixin-train/src/app.jsx` and `app.config.js` — Taro app wrapper and page routing.
+  - `weixin-train/src/store/index.js` and `reducers/` — Redux wiring (thunk, logger).
 
-### Tailwind CSS Configuration
-- **v3** (cv-portfolio, tailwindcss-test): Config in `tailwind.config.js` with `content: ["./index.html", "./src/**/*.{js,jsx}"]`
-- **v4** (video-content): Imported via `@import "tailwindcss"` in `globals.css` with new v4 theme system
-- **Taro**: `weapp-tw` patch needed; disable Tailwind preflight to avoid conflicts with Taro components
+- **Project-specific patterns & gotchas**
 
-### State Management
-- **cv-portfolio**: Simple `useState` for `activeSection` toggle
-- **video-content**: Hook-based with localStorage persistence; `commentsStore.js` provides `getComments()` and `addComment()` functions
-- **weixin-train**: Redux with `combineReducers` (e.g., counter reducer); middleware includes thunk and logger; store configured with Redux DevTools integration
+  - Tailwind: v3 used in `cv-portfolio` & `tailwindcss-test`; v4 in `video-content`. Check each `tailwind.config.js` and `globals.css`.
+  - `weixin-train` uses Taro components (`View`, `Text`) — do not swap for DOM elements.
+  - `video-content` autoplay relies on `usePage` + `videoRef`; changing the threshold or ref handling can break autoplay/mute.
+  - No monorepo workspace: treat projects as separate (do not add cross-project imports without converting to workspaces).
 
-### UI Component Patterns
-- **Icon Library**: All projects use `lucide-react` for consistent iconography (Download, Github, Linkedin, Mail, Heart, MessageCircle, etc.)
-- **Responsive Design**: 
-  - cv-portfolio: `hidden md:flex` for mobile-first nav
+- **Common workflows**
+
+  - Install per-project: `cd <project> ; npm install`
+  - Linting: run `npm run lint` inside projects that declare it (cv-portfolio, video-content, tailwindcss-test).
+  - Build: `npm run build` (Vite/Next); Taro uses `npm run build:weapp` / `npm run build:h5`.
+
+- **Where to change data/state**
+
+  - Videos list: `video-content/lib/videos.js`
+  - Comments: `video-content/lib/commentsStore.js`
+  - App layout: `cv-portfolio/src/App.jsx`; Next layout: `video-content/app/layout.js`
+
+- **Testing & debugging tips for agents**
+  - Reproduce by running the dev server and viewing browser console and terminal for stack traces.
+  - For video UX bugs, inspect `videoRef` usage in `VideoCard.jsx` and `usePage.js` behavior.
+  - If Tailwind classes don’t appear, confirm `content` globs in that project's `tailwind.config.js`.
+
+If you want, I can also:
+
+- add short CI snippets to run builds per project,
+- list package versions (node/npm) used here,
+- or expand on Taro-specific build/test workflows.
+  Tell me which you'd like next.
   - video-content: Separate `lg:block` desktop layout vs mobile `lg:hidden`
-  - weixin-train: Tailwind classes work on Taro components (not standard JSX)
-
-### Performance Considerations (video-content)
-- **Lazy Video Loading**: `usePage` hook uses Intersection Observer (threshold 0.75) to play videos only when 75% visible
-- **Motion Preferences**: Respects `prefers-reduced-motion` media query
-- **Audio Management**: Videos auto-mute on load; manual toggle via `setMuted()` state
-
-### Form & Navigation Patterns
-- **cv-portfolio**: Button-based section switching with hardcoded section names (about, experience, projects, education, contact)
-- **weixin-train**: Taro routing via `Taro.reLaunch()` or `Taro.navigateTo()` with page paths
-- **video-content**: Tab-based filtering via `activeTab` state passed to `DesktopWeb`
-
----
-
-## Cross-Project Communication & Dependencies
-
-### Inter-project Structure
-- Projects are independent; no shared npm workspace (each has own `package.json`)
-- Monorepo root has shared `LICENSE`, `README.md`, and git history
-- Branch structure: `production/v1.0.0` is the active version
-
-### External API Integration (Potential)
-- **video-content**: Uses mock video URLs from Google Cloud (sample bucket); `lib/videos.js` is the data source
-- **cv-portfolio**: Contains mock experience, projects, certifications—easily replaceable with API calls
-- **weixin-train**: No external APIs in current setup; ready for WeChat SDK integration
-
-### Asset Management
-- Static assets in `public/` folders (per project)
-- cv-portfolio: Uses `placehold.co` for placeholder images
-- video-content: Direct HTTP video URLs; can swap to local `public/` videos
-
----
-
-## Configuration Files Reference
-
-### Key Files by Project
-- **Build**: `vite.config.js` (Vite), `next.config.mjs` (Next.js), `project.config.json` (Taro)
-- **Styling**: `tailwind.config.js`, `postcss.config.js` (per project)
-- **Linting**: `eslint.config.js` (ESLint v9 flat format)
-- **React**: `index.html` entry point, `main.jsx` bootstrap (Vite), `app/layout.js` (Next.js)
-
----
-
-## Common Tasks for AI Agents
-
-### ✅ Adding Features
-1. Determine which project(s) need the change
-2. For UI: Modify components in `src/components/` or directly in `App.jsx`; use Tailwind classes
-3. For state: Add `useState`/`useCallback` (React hooks) or Redux actions (weixin-train)
-4. For data: Update mock data in `lib/` files (e.g., `videos.js`, or component-level state)
-
-### ✅ Styling Tasks
-- Use Tailwind utility classes (no custom CSS unless necessary)
-- Responsive prefixes: `md:`, `lg:` for breakpoints
-- Color scheme: neutrals + primary/accent colors from Tailwind palette
-- Maintain consistency with existing component style (e.g., shadow-sm, rounded-xl patterns in cv-portfolio)
-
-### ✅ Debugging
-- **Console Errors**: Check ESLint rules (e.g., unused variables trigger "varsIgnorePattern: ^[A-Z_]")
-- **Build Failures**: Verify framework-specific configs (Taro preflight, Next.js API routes)
-- **Video Not Playing**: Check `videoRef.current` and Intersection Observer threshold in `usePage` hook
-- **Tailwind Not Applied**: Ensure `content` path in `tailwind.config.js` includes component files
-
-### ⚠️ Avoid
-- Don't assume shared dependencies across projects (each is independent)
-- Don't use standard React DOM components in weixin-train (use Taro components: `View`, `Text`, `Button`)
-- Don't modify ESLint rules without understanding impact on all projects
-- Don't hardcode environment variables—use `.env.local` per framework (Next.js support built-in)
-
----
-
-## Notes for Long-term Maintenance
-- **Monorepo Evolution**: Consider `pnpm workspaces` or `npm workspaces` if shared code grows
-- **Shared Utilities**: If duplicated code appears (e.g., `lib/utils.js` pattern), create a `packages/shared/` workspace
-- **Version Consistency**: React versions vary (18 vs 19)—intentional or needs standardization?
-- **Taro Limitations**: Always test weapp builds locally using WeChat DevTools before deployment
