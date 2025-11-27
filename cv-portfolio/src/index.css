@@ -105,3 +105,55 @@
   background: linear-gradient(to right, #4f46e5, #a855f7);
   color: white;
 }
+
+/* Theme variables and utility classes */
+:root[data-theme="light"] {
+  --bg: linear-gradient(to bottom right, #eef2ff 0%, #fdfcff 100%);
+  --card-bg: #ffffff;
+  --header-bg: rgba(255,255,255,0.8);
+  --text-primary: #0f172a; /* gray-900 */
+  --text-muted: #475569; /* gray-600 */
+  --accent-1: #6366f1; /* indigo-500 */
+  --accent-2: #a78bfa; /* purple-300 */
+}
+
+:root[data-theme="dark"] {
+  --bg: linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
+  --card-bg: #0b1220;
+  --header-bg: rgba(15,23,42,0.6);
+  --text-primary: #e6eef8; /* soft light */
+  --text-muted: #9ca3af; /* gray-400 */
+  --accent-1: #7c3aed; /* purple-600 */
+  --accent-2: #06b6d4; /* cyan-500 */
+}
+
+.app-bg {
+  background: var(--bg) !important;
+}
+
+.card-bg {
+  background: var(--card-bg) !important;
+}
+
+.header-bg {
+  background: var(--header-bg) !important;
+}
+
+.text-primary {
+  color: var(--text-primary) !important;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+.accent-gradient {
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+}
+
+.accent-text {
+  background: var(--accent-1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
