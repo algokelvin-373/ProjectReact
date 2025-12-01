@@ -24,3 +24,29 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Small animation for double-tap heart (used in VideoCard) */
+@keyframes heart-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  30% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  60% {
+    transform: scale(0.95);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+}
+
+.heart-pop {
+  display: inline-grid;
+  place-items: center;
+  animation: heart-pop 800ms cubic-bezier(0.2, 0.9, 0.2, 1) forwards;
+}

@@ -22,6 +22,9 @@ export default function VideoCard({ item }) {
   const [muted, setMuted] = useState(true);
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(item.likes);
+  const [showHeart, setShowHeart] = useState(false);
+  const lastTapRef = useRef(0);
+  const singleTapTimeout = useRef(null);
 
   const prefersReducedMotion = useMemo(
     () =>
@@ -45,6 +48,34 @@ export default function VideoCard({ item }) {
       setPaused(true);
     }
   }, []);
+
+  // Double-tap behaviour: on double-tap like (always like, like TikTok),
+  // on single tap toggle play. This handles touch & mouse double click.
+  const handleTap = useCallback(() => {
+    const now = Date.now();
+    const delta = now - lastTapRef.current;
+    const DOUBLE_TAP_MS = 300;
+
+    if (delta < DOUBLE_TAP_MS) {
+      // double tap
+      clearTimeout(singleTapTimeout.current);
+      lastTapRef.current = 0;
+      // animate heart and ensure liked
+      if (!liked) {
+        setLiked(true);
+        setLikes((l) => l + 1);
+      }
+      setShowHeart(true);
+      setTimeout(() => setShowHeart(false), 800);
+    } else {
+      // possible single tap -> wait to confirm not a double tap
+      lastTapRef.current = now;
+      singleTapTimeout.current = setTimeout(() => {
+        togglePlay();
+        lastTapRef.current = 0;
+      }, DOUBLE_TAP_MS);
+    }
+  }, [liked, togglePlay]);
 
   const toggleMute = useCallback(() => {
     const el = videoRef.current;
@@ -126,7 +157,17 @@ export default function VideoCard({ item }) {
                 playsInline
                 preload="metadata"
                 aria-label={`Video content: ${item.caption}`}
-                onClick={togglePlay}
+                onClick={handleTap}
+                onDoubleClick={(e) => {
+                  // ensure desktop double click also triggers like animation
+                  e.preventDefault();
+                  if (!liked) {
+                    setLiked(true);
+                    setLikes((l) => l + 1);
+                  }
+                  setShowHeart(true);
+                  setTimeout(() => setShowHeart(false), 800);
+                }}
               />
               {/* Play overlay indicator */}
               {paused && (
@@ -134,6 +175,15 @@ export default function VideoCard({ item }) {
                   <div className="bg-black/40 rounded-full p-4">
                     <Play className="h-10 w-10 text-white" />
                     <span className="sr-only">Tap to play</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Double-tap heart animation */}
+              {showHeart && (
+                <div className="absolute inset-0 grid place-items-center pointer-events-none">
+                  <div className="heart-pop">
+                    <Heart className="h-24 w-24 text-white drop-shadow-lg" />
                   </div>
                 </div>
               )}
@@ -180,7 +230,7 @@ export default function VideoCard({ item }) {
                 onAdd={() => setCommentsCount((c) => c + 1)}
               />
               <div className="text-center text-xs opacity-90">
-                {item.comments}
+                {commentsCount}
               </div>
 
               <button

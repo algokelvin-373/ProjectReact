@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import DesktopWeb from "@/components/DesktopWeb";
+import Navbar from "@/components/Navbar";
 import VideoFeed from "@/components/VideoFeed";
 import {
   videos,
@@ -11,7 +12,7 @@ import {
 } from "@/lib/videos";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState();
+  const [activeTab, setActiveTab] = useState("home");
 
   const getVideos = () => {
     switch (activeTab) {
@@ -21,6 +22,13 @@ export default function Home() {
         return followingVideos;
       case "profile":
         return profileVideos;
+      case "home":
+        return videos;
+      case "teman":
+        return followingVideos;
+      case "favorite":
+        // No dedicated favorites store — fall back to topick as placeholder
+        return topickVideos;
       default:
         return videos;
     }
@@ -38,6 +46,7 @@ export default function Home() {
       {/* Mobile layout */}
       <div className="lg:hidden">
         <VideoFeed initialVideos={getVideos()} />
+        <Navbar activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
     </main>
   );

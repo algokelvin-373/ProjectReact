@@ -1,6 +1,14 @@
 "use client";
 
-import { Home, Compass, Users, User, Smartphone, Search } from "lucide-react";
+import {
+  Home,
+  Compass,
+  Users,
+  User,
+  Smartphone,
+  Search,
+  Heart,
+} from "lucide-react";
 import { NavItem } from "./NavItem";
 
 export default function DesktopWeb({ children, activeTab, onTabChange }) {
@@ -38,24 +46,24 @@ export default function DesktopWeb({ children, activeTab, onTabChange }) {
               <div className="h-px my-2 bg-white/10" />
 
               <NavItem
-                icon={<Compass />}
-                label="Topick"
-                active={activeTab === "topick"}
-                onClick={() => onTabChange("topick")}
-              />
-              <NavItem
                 icon={<Home />}
-                label="For You"
-                active={activeTab === "foryou"}
-                onClick={() => onTabChange("foryou")}
+                label="Home"
+                active={activeTab === "home"}
+                onClick={() => onTabChange("home")}
               />
-              <div className="h-px my-2 bg-white/10" />
               <NavItem
                 icon={<Users />}
-                label="Following"
-                active={activeTab === "following"}
-                onClick={() => onTabChange("following")}
+                label="Teman"
+                active={activeTab === "teman"}
+                onClick={() => onTabChange("teman")}
               />
+              <NavItem
+                icon={<Heart />}
+                label="Favorite"
+                active={activeTab === "favorite"}
+                onClick={() => onTabChange("favorite")}
+              />
+              <div className="h-px my-2 bg-white/10" />
               <NavItem
                 icon={<User />}
                 label="Profile"
