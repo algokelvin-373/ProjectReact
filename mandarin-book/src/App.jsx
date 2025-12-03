@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Sun,
   Moon,
@@ -10,6 +10,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Upload,
+  FileText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -26,6 +28,9 @@ const App = () => {
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [toast, setToast] = useState(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const fileInputRef = useRef(null);
   const itemsPerPage = 10;
 
   // Initialize theme based on system preference
@@ -108,6 +113,14 @@ const App = () => {
     setSentences(initialSentences);
   }, []);
 
+  // Handle toast messages
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
   // Apply theme to document
   useEffect(() => {
     if (darkMode) {
@@ -146,6 +159,12 @@ const App = () => {
 
       setFormData({ hanzi: "", pinyin: "", indonesian: "" });
       setIsAdding(false);
+
+      // Show success toast
+      setToast({
+        message: "Phrase added successfully!",
+        type: "success",
+      });
     }
   };
 
@@ -167,6 +186,12 @@ const App = () => {
       setSentences(updatedSentences);
       setEditingIndex(null);
       setFormData({ hanzi: "", pinyin: "", indonesian: "" });
+
+      // Show success toast
+      setToast({
+        message: "Phrase updated successfully!",
+        type: "success",
+      });
     }
   };
 
@@ -184,6 +209,134 @@ const App = () => {
     }
 
     setShowDeleteConfirm(null);
+
+    // Show success toast
+    setToast({
+      message: "Phrase deleted successfully!",
+      type: "success",
+    });
+  };
+
+  // Handle CSV file import
+  const handleFileImport = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (file.name.split(".").pop().toLowerCase() !== "csv") {
+      setToast({
+        message: "Please upload a CSV file only",
+        type: "error",
+      });
+      return;
+    }
+
+    setImportLoading(true);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target.result;
+        const importedData = parseCSV(content);
+
+        if (importedData.length === 0) {
+          throw new Error("No valid data found in CSV");
+        }
+
+        // Validate data structure
+        const invalidRows = importedData.filter(
+          (row) => !row.hanzi || !row.pinyin || !row.indonesian
+        );
+
+        if (invalidRows.length > 0) {
+          throw new Error(
+            `CSV contains ${invalidRows.length} invalid rows with missing data`
+          );
+        }
+
+        // Merge with existing data
+        const newSentences = [...sentences, ...importedData];
+        setSentences(newSentences);
+
+        // Reset to first page if new data spans multiple pages
+        if (newSentences.length > itemsPerPage) {
+          setCurrentPage(1);
+        }
+
+        setToast({
+          message: `Successfully imported ${importedData.length} phrases!`,
+          type: "success",
+        });
+      } catch (error) {
+        setToast({
+          message: `Import failed: ${error.message}`,
+          type: "error",
+        });
+      } finally {
+        setImportLoading(false);
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      }
+    };
+
+    reader.onerror = () => {
+      setToast({
+        message: "Error reading file",
+        type: "error",
+      });
+      setImportLoading(false);
+    };
+
+    reader.readAsText(file);
+  };
+
+  // Parse CSV content with semicolon delimiter
+  const parseCSV = (content) => {
+    const lines = content.split("\n").filter((line) => line.trim() !== "");
+    if (lines.length < 2) {
+      throw new Error("CSV must contain headers and at least one row of data");
+    }
+
+    // Parse headers using semicolon delimiter
+    const headers = lines[0]
+      .split(";")
+      .map((header) => header.trim().toLowerCase());
+    const requiredHeaders = ["hanzi", "pinyin", "indonesian"];
+
+    // Validate headers
+    const missingHeaders = requiredHeaders.filter(
+      (header) => !headers.includes(header)
+    );
+    if (missingHeaders.length > 0) {
+      throw new Error(`Missing required headers: ${missingHeaders.join(", ")}`);
+    }
+
+    // Get header indices
+    const hanziIndex = headers.findIndex((h) => h === "hanzi");
+    const pinyinIndex = headers.findIndex((h) => h === "pinyin");
+    const indonesianIndex = headers.findIndex((h) => h === "indonesian");
+
+    // Parse data rows using semicolon delimiter
+    const data = [];
+    for (let i = 1; i < lines.length; i++) {
+      const row = lines[i].split(";");
+      if (row.length < 3) continue; // Skip invalid rows
+
+      data.push({
+        hanzi: row[hanziIndex]?.trim() || "",
+        pinyin: row[pinyinIndex]?.trim() || "",
+        indonesian: row[indonesianIndex]?.trim() || "",
+      });
+    }
+
+    return data;
+  };
+
+  // Trigger file input click
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   const toggleTheme = () => setDarkMode(!darkMode);
@@ -202,6 +355,12 @@ const App = () => {
   const paginationItemVariants = {
     hidden: { opacity: 0, y: 10 },
     visible: { opacity: 1, y: 0 },
+  };
+
+  const toastVariants = {
+    initial: { opacity: 0, y: 50 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: 50 },
   };
 
   if (!mounted) return null;
@@ -251,20 +410,55 @@ const App = () => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <motion.button
-              onClick={() => setIsAdding(true)}
-              className={`flex items-center px-4 py-2 rounded-xl font-medium shadow-md transition-all duration-300 ${
-                darkMode
-                  ? "bg-green-600 hover:bg-green-700 text-white"
-                  : "bg-green-500 hover:bg-green-600 text-white"
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Phrase
-            </motion.button>
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+            <div className="flex space-x-3 w-full sm:w-auto">
+              <input
+                type="file"
+                accept=".csv"
+                ref={fileInputRef}
+                onChange={handleFileImport}
+                className="hidden"
+              />
+              <motion.button
+                onClick={triggerFileInput}
+                disabled={importLoading}
+                className={`flex-1 sm:flex-initial flex items-center justify-center px-4 py-2 rounded-xl font-medium shadow-md transition-all duration-300 ${
+                  darkMode
+                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                    : "bg-blue-500 hover:bg-blue-600 text-white"
+                } ${importLoading ? "opacity-70 cursor-not-allowed" : ""}`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {importLoading ? (
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></div>
+                    <span>Importing...</span>
+                  </div>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">Import CSV</span>
+                    <span className="sm:hidden">Import</span>
+                  </>
+                )}
+              </motion.button>
+
+              <motion.button
+                onClick={() => setIsAdding(true)}
+                className={`flex-1 sm:flex-initial flex items-center justify-center px-4 py-2 rounded-xl font-medium shadow-md transition-all duration-300 ${
+                  darkMode
+                    ? "bg-green-600 hover:bg-green-700 text-white"
+                    : "bg-green-500 hover:bg-green-600 text-white"
+                }`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Add Phrase</span>
+                <span className="sm:hidden">Add</span>
+              </motion.button>
+            </div>
 
             <motion.button
               onClick={toggleTheme}
@@ -288,6 +482,55 @@ const App = () => {
             </motion.button>
           </div>
         </div>
+
+        {/* CSV Format Guide */}
+        <AnimatePresence>
+          {isAdding && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className={`mb-6 rounded-xl p-4 text-sm ${
+                darkMode
+                  ? "bg-blue-900/30 border border-blue-800"
+                  : "bg-blue-50 border border-blue-200"
+              }`}
+            >
+              <div className="flex items-start">
+                <FileText
+                  className={`w-5 h-5 mt-0.5 mr-2 flex-shrink-0 ${
+                    darkMode ? "text-blue-400" : "text-blue-600"
+                  }`}
+                />
+                <div>
+                  <p
+                    className={`font-medium ${
+                      darkMode ? "text-blue-200" : "text-blue-800"
+                    }`}
+                  >
+                    CSV Format Requirements:
+                  </p>
+                  <ul
+                    className={`mt-1 list-disc pl-5 space-y-1 ${
+                      darkMode ? "text-blue-100" : "text-blue-700"
+                    }`}
+                  >
+                    <li>
+                      Must have headers:{" "}
+                      <span className="font-mono">hanzi;pinyin;indonesian</span>
+                    </li>
+                    <li>Use semicolon (;) as delimiter between columns</li>
+                    <li>Each row must contain all three fields</li>
+                    <li>
+                      Example:{" "}
+                      <span className="font-mono">你好;Nǐ hǎo;Halo</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Add/Edit Form */}
         <AnimatePresence>
@@ -348,6 +591,7 @@ const App = () => {
                         : "bg-white border-gray-300 text-gray-900 focus:border-indigo-500"
                     } focus:ring-2 focus:ring-indigo-500/50 transition-all`}
                     placeholder="你好吗？"
+                    autoFocus
                   />
                 </div>
                 <div>
@@ -709,6 +953,36 @@ const App = () => {
                   </button>
                 </div>
               </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Toast Notification */}
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              variants={toastVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-xl shadow-lg z-40 ${
+                toast.type === "success"
+                  ? darkMode
+                    ? "bg-green-900/70 border border-green-700"
+                    : "bg-green-500 text-white"
+                  : darkMode
+                  ? "bg-red-900/70 border border-red-700"
+                  : "bg-red-500 text-white"
+              }`}
+            >
+              <div className="flex items-center">
+                {toast.type === "success" ? (
+                  <div className="w-2 h-2 bg-white rounded-full mr-3"></div>
+                ) : (
+                  <div className="w-2 h-2 bg-white rounded-full mr-3 animate-pulse"></div>
+                )}
+                <span className="font-medium">{toast.message}</span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
