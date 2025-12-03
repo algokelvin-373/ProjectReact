@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Sun,
   Moon,
@@ -8,6 +8,8 @@ import {
   Trash2,
   Save,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -23,6 +25,8 @@ const App = () => {
     indonesian: "",
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Initialize theme based on system preference
   useEffect(() => {
@@ -32,7 +36,7 @@ const App = () => {
     setDarkMode(systemTheme);
     setMounted(true);
 
-    // Initialize with default sentences if none exist
+    // Initialize with default sentences
     const initialSentences = [
       { hanzi: "你好吗？", pinyin: "Nǐ hǎo ma?", indonesian: "Apa kabar?" },
       {
@@ -65,6 +69,40 @@ const App = () => {
         pinyin: "Wǒ xǐhuān xuéxí Zhōngwén.",
         indonesian: "Saya suka belajar bahasa Mandarin.",
       },
+      {
+        hanzi: "你叫什么名字？",
+        pinyin: "Nǐ jiào shénme míngzi?",
+        indonesian: "Siapa nama Anda?",
+      },
+      {
+        hanzi: "我明白了。",
+        pinyin: "Wǒ míngbáile.",
+        indonesian: "Saya mengerti.",
+      },
+      { hanzi: "对不起。", pinyin: "Duìbùqǐ.", indonesian: "Maaf." },
+      {
+        hanzi: "没关系。",
+        pinyin: "Méi guānxi.",
+        indonesian: "Tidak masalah.",
+      },
+      { hanzi: "再见！", pinyin: "Zàijiàn!", indonesian: "Sampai jumpa!" },
+      { hanzi: "谢谢你！", pinyin: "Xièxie nǐ!", indonesian: "Terima kasih!" },
+      { hanzi: "不客气。", pinyin: "Bú kèqì.", indonesian: "Sama-sama." },
+      {
+        hanzi: "多少钱？",
+        pinyin: "Duōshǎo qián?",
+        indonesian: "Berapa harganya?",
+      },
+      { hanzi: "太贵了！", pinyin: "Tài guìle!", indonesian: "Terlalu mahal!" },
+      {
+        hanzi: "便宜点吧。",
+        pinyin: "Piányi diǎn ba.",
+        indonesian: "Turunkan harganya sedikit.",
+      },
+      { hanzi: "好吃！", pinyin: "Hǎo chī!", indonesian: "Enak!" },
+      { hanzi: "难吃。", pinyin: "Nán chī.", indonesian: "Tidak enak." },
+      { hanzi: "我饿了。", pinyin: "Wǒ èle.", indonesian: "Saya lapar." },
+      { hanzi: "我渴了。", pinyin: "Wǒ kěle.", indonesian: "Saya haus." },
     ];
 
     setSentences(initialSentences);
@@ -79,7 +117,11 @@ const App = () => {
     }
   }, [darkMode]);
 
-  const toggleTheme = () => setDarkMode(!darkMode);
+  // Calculate pagination data
+  const totalPages = Math.ceil(sentences.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentSentences = sentences.slice(indexOfFirstItem, indexOfLastItem);
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -94,16 +136,23 @@ const App = () => {
       formData.pinyin.trim() &&
       formData.indonesian.trim()
     ) {
-      setSentences([...sentences, formData]);
+      const newSentences = [...sentences, formData];
+      setSentences(newSentences);
+
+      // If adding to the last page that was full, go to new page
+      if (currentPage === totalPages && sentences.length % itemsPerPage === 0) {
+        setCurrentPage(totalPages + 1);
+      }
+
       setFormData({ hanzi: "", pinyin: "", indonesian: "" });
       setIsAdding(false);
     }
   };
 
   // Handle editing sentence
-  const handleEditSentence = (index) => {
-    setFormData(sentences[index]);
-    setEditingIndex(index);
+  const handleEditSentence = (globalIndex) => {
+    setFormData(sentences[globalIndex]);
+    setEditingIndex(globalIndex);
   };
 
   // Handle saving edited sentence
@@ -122,11 +171,22 @@ const App = () => {
   };
 
   // Handle deleting sentence
-  const handleDeleteSentence = (index) => {
-    const updatedSentences = sentences.filter((_, i) => i !== index);
+  const handleDeleteSentence = (globalIndex) => {
+    const updatedSentences = sentences.filter((_, i) => i !== globalIndex);
     setSentences(updatedSentences);
+
+    // Adjust page if needed after deletion
+    const newTotalPages = Math.ceil(updatedSentences.length / itemsPerPage);
+    if (currentPage > newTotalPages && newTotalPages > 0) {
+      setCurrentPage(newTotalPages);
+    } else if (newTotalPages === 0) {
+      setCurrentPage(1);
+    }
+
     setShowDeleteConfirm(null);
   };
+
+  const toggleTheme = () => setDarkMode(!darkMode);
 
   // Animation variants
   const toggleVariants = {
@@ -136,6 +196,11 @@ const App = () => {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
+  const paginationItemVariants = {
+    hidden: { opacity: 0, y: 10 },
     visible: { opacity: 1, y: 0 },
   };
 
@@ -398,88 +463,178 @@ const App = () => {
           </div>
 
           <AnimatePresence mode="popLayout">
-            {sentences.map((sentence, index) => (
-              <motion.div
-                key={index}
-                initial="hidden"
-                animate="visible"
-                exit={{ opacity: 0, height: 0 }}
-                variants={itemVariants}
-                transition={{ duration: 0.3 }}
-                className={`grid grid-cols-4 ${
-                  index % 2 === 0
-                    ? darkMode
-                      ? "bg-gray-800"
-                      : "bg-white"
-                    : darkMode
-                    ? "bg-gray-900/70"
-                    : "bg-indigo-50"
-                } border-b border-gray-200 dark:border-gray-700`}
-              >
-                <div
-                  className={`p-4 font-serif text-lg ${
-                    darkMode ? "text-gray-200" : "text-gray-800"
-                  } flex items-center justify-center sm:justify-start`}
+            {currentSentences.map((sentence, localIndex) => {
+              const globalIndex = indexOfFirstItem + localIndex;
+              return (
+                <motion.div
+                  key={globalIndex}
+                  initial="hidden"
+                  animate="visible"
+                  exit={{ opacity: 0, height: 0 }}
+                  variants={itemVariants}
+                  transition={{ duration: 0.3 }}
+                  className={`grid grid-cols-4 ${
+                    localIndex % 2 === 0
+                      ? darkMode
+                        ? "bg-gray-800"
+                        : "bg-white"
+                      : darkMode
+                      ? "bg-gray-900/70"
+                      : "bg-indigo-50"
+                  } border-b border-gray-200 dark:border-gray-700`}
                 >
-                  {sentence.hanzi}
-                </div>
-                <div
-                  className={`p-4 font-medium ${
-                    darkMode ? "text-indigo-200" : "text-indigo-700"
-                  } flex items-center justify-center sm:justify-start`}
-                >
-                  {sentence.pinyin}
-                </div>
-                <div
-                  className={`p-4 ${
-                    darkMode ? "text-gray-300" : "text-gray-700"
-                  } flex items-center justify-center sm:justify-start`}
-                >
-                  {sentence.indonesian}
-                </div>
-                <div className="p-4 flex items-center justify-center space-x-2">
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => handleEditSentence(index)}
-                    className={`p-2 rounded-lg transition-all ${
-                      darkMode
-                        ? "bg-blue-900/50 hover:bg-blue-800 text-blue-300"
-                        : "bg-blue-50 hover:bg-blue-100 text-blue-600"
-                    }`}
-                    aria-label="Edit sentence"
+                  <div
+                    className={`p-4 font-serif text-lg ${
+                      darkMode ? "text-gray-200" : "text-gray-800"
+                    } flex items-center justify-center sm:justify-start`}
                   >
-                    <Edit className="w-5 h-5" />
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setShowDeleteConfirm(index)}
-                    className={`p-2 rounded-lg transition-all ${
-                      darkMode
-                        ? "bg-red-900/50 hover:bg-red-800 text-red-300"
-                        : "bg-red-50 hover:bg-red-100 text-red-600"
-                    }`}
-                    aria-label="Delete sentence"
+                    {sentence.hanzi}
+                  </div>
+                  <div
+                    className={`p-4 font-medium ${
+                      darkMode ? "text-indigo-200" : "text-indigo-700"
+                    } flex items-center justify-center sm:justify-start`}
                   >
-                    <Trash2 className="w-5 h-5" />
-                  </motion.button>
-                </div>
-              </motion.div>
-            ))}
+                    {sentence.pinyin}
+                  </div>
+                  <div
+                    className={`p-4 ${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    } flex items-center justify-center sm:justify-start`}
+                  >
+                    {sentence.indonesian}
+                  </div>
+                  <div className="p-4 flex items-center justify-center space-x-2">
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleEditSentence(globalIndex)}
+                      className={`p-2 rounded-lg transition-all ${
+                        darkMode
+                          ? "bg-blue-900/50 hover:bg-blue-800 text-blue-300"
+                          : "bg-blue-50 hover:bg-blue-100 text-blue-600"
+                      }`}
+                      aria-label="Edit sentence"
+                    >
+                      <Edit className="w-5 h-5" />
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setShowDeleteConfirm(globalIndex)}
+                      className={`p-2 rounded-lg transition-all ${
+                        darkMode
+                          ? "bg-red-900/50 hover:bg-red-800 text-red-300"
+                          : "bg-red-50 hover:bg-red-100 text-red-600"
+                      }`}
+                      aria-label="Delete sentence"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </motion.button>
+                  </div>
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
 
-          {sentences.length === 0 && (
+          {currentSentences.length === 0 && (
             <div
-              className={`py-12 text-center ${
+              className={`py-16 text-center ${
                 darkMode ? "text-gray-400" : "text-gray-500"
               }`}
             >
               <p className="text-xl font-medium">
-                No phrases available. Add your first phrase!
+                No phrases available on this page
+              </p>
+              <p className="mt-2">
+                Try adding new phrases or checking other pages
               </p>
             </div>
           )}
+        </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`mt-8 flex justify-center items-center space-x-2 ${
+              darkMode ? "text-gray-300" : "text-gray-700"
+            }`}
+          >
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`p-3 rounded-lg flex items-center justify-center transition-all ${
+                currentPage === 1
+                  ? darkMode
+                    ? "text-gray-600 cursor-not-allowed"
+                    : "text-gray-400 cursor-not-allowed"
+                  : darkMode
+                  ? "text-indigo-300 hover:bg-indigo-900/50"
+                  : "text-indigo-600 hover:bg-indigo-50"
+              }`}
+            >
+              <ChevronLeft className="w-5 h-5 mr-1" />
+              <span className="hidden sm:inline">Previous</span>
+            </button>
+
+            <AnimatePresence mode="wait">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (pageNumber) => (
+                  <motion.button
+                    key={pageNumber}
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    variants={paginationItemVariants}
+                    onClick={() => setCurrentPage(pageNumber)}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm transition-all ${
+                      currentPage === pageNumber
+                        ? darkMode
+                          ? "bg-indigo-600 text-white shadow-lg"
+                          : "bg-indigo-600 text-white shadow-lg"
+                        : darkMode
+                        ? "hover:bg-gray-700"
+                        : "hover:bg-gray-200"
+                    }`}
+                  >
+                    {pageNumber}
+                  </motion.button>
+                )
+              )}
+            </AnimatePresence>
+
+            <button
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+              className={`p-3 rounded-lg flex items-center justify-center transition-all ${
+                currentPage === totalPages
+                  ? darkMode
+                    ? "text-gray-600 cursor-not-allowed"
+                    : "text-gray-400 cursor-not-allowed"
+                  : darkMode
+                  ? "text-indigo-300 hover:bg-indigo-900/50"
+                  : "text-indigo-600 hover:bg-indigo-50"
+              }`}
+            >
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight className="w-5 h-5 ml-1" />
+            </button>
+          </motion.div>
+        )}
+
+        {/* Stats */}
+        <div
+          className={`mt-6 text-center text-sm ${
+            darkMode ? "text-gray-400" : "text-gray-600"
+          }`}
+        >
+          Showing {indexOfFirstItem + 1} to{" "}
+          {Math.min(indexOfLastItem, sentences.length)} of {sentences.length}{" "}
+          phrases
         </div>
 
         {/* Delete confirmation modal */}
@@ -584,7 +739,8 @@ const App = () => {
             Learners
           </p>
           <p className="mt-1 text-sm">
-            Toggle theme for optimal reading comfort
+            Toggle theme for optimal reading comfort • {totalPages} pages of
+            phrases
           </p>
         </footer>
       </div>
