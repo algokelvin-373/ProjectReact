@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Sun,
   Moon,
@@ -12,14 +12,218 @@ import {
   ChevronRight,
   Upload,
   FileText,
+  Menu,
+  X as XIcon,
+  Loader,
+  AlertCircle,
+  Copy,
+  Check,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Mock API Service - Simulates real API calls
+const apiService = {
+  // Simulate API delay
+  delay: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+
+  // Get all sentences (simulated API call)
+  async getSentences() {
+    await this.delay(500); // Simulate network delay
+    return [
+      {
+        id: 1,
+        hanzi: "你好吗？",
+        pinyin: "Nǐ hǎo ma?",
+        indonesian: "Apa kabar?",
+      },
+      {
+        id: 2,
+        hanzi: "我很好，谢谢。",
+        pinyin: "Wǒ hěn hǎo, xièxie.",
+        indonesian: "Saya baik, terima kasih.",
+      },
+      {
+        id: 3,
+        hanzi: "今天天气怎么样？",
+        pinyin: "Jīntiān tiānqì zěnmeyàng?",
+        indonesian: "Bagaimana cuaca hari ini?",
+      },
+      {
+        id: 4,
+        hanzi: "我想喝咖啡。",
+        pinyin: "Wǒ xiǎng hē kāfēi.",
+        indonesian: "Saya ingin minum kopi.",
+      },
+      {
+        id: 5,
+        hanzi: "请问，厕所在哪里？",
+        pinyin: "Qǐngwèn, cèsuǒ zài nǎlǐ?",
+        indonesian: "Permisi, di mana toilet?",
+      },
+      {
+        id: 6,
+        hanzi: "这个多少钱？",
+        pinyin: "Zhège duōshǎo qián?",
+        indonesian: "Berapa harganya?",
+      },
+      {
+        id: 7,
+        hanzi: "我喜欢学习中文。",
+        pinyin: "Wǒ xǐhuān xuéxí Zhōngwén.",
+        indonesian: "Saya suka belajar bahasa Mandarin.",
+      },
+      {
+        id: 8,
+        hanzi: "你叫什么名字？",
+        pinyin: "Nǐ jiào shénme míngzi?",
+        indonesian: "Siapa nama Anda?",
+      },
+      {
+        id: 9,
+        hanzi: "我明白了。",
+        pinyin: "Wǒ míngbáile.",
+        indonesian: "Saya mengerti.",
+      },
+      { id: 10, hanzi: "对不起。", pinyin: "Duìbùqǐ.", indonesian: "Maaf." },
+      {
+        id: 11,
+        hanzi: "没关系。",
+        pinyin: "Méi guānxi.",
+        indonesian: "Tidak masalah.",
+      },
+      {
+        id: 12,
+        hanzi: "再见！",
+        pinyin: "Zàijiàn!",
+        indonesian: "Sampai jumpa!",
+      },
+      {
+        id: 13,
+        hanzi: "谢谢你！",
+        pinyin: "Xièxie nǐ!",
+        indonesian: "Terima kasih!",
+      },
+      {
+        id: 14,
+        hanzi: "不客气。",
+        pinyin: "Bú kèqì.",
+        indonesian: "Sama-sama.",
+      },
+      {
+        id: 15,
+        hanzi: "多少钱？",
+        pinyin: "Duōshǎo qián?",
+        indonesian: "Berapa harganya?",
+      },
+      {
+        id: 16,
+        hanzi: "太贵了！",
+        pinyin: "Tài guìle!",
+        indonesian: "Terlalu mahal!",
+      },
+      {
+        id: 17,
+        hanzi: "便宜点吧。",
+        pinyin: "Piányi diǎn ba.",
+        indonesian: "Turunkan harganya sedikit.",
+      },
+      { id: 18, hanzi: "好吃！", pinyin: "Hǎo chī!", indonesian: "Enak!" },
+      {
+        id: 19,
+        hanzi: "难吃。",
+        pinyin: "Nán chī.",
+        indonesian: "Tidak enak.",
+      },
+      {
+        id: 20,
+        hanzi: "我饿了。",
+        pinyin: "Wǒ èle.",
+        indonesian: "Saya lapar.",
+      },
+      {
+        id: 21,
+        hanzi: "我渴了。",
+        pinyin: "Wǒ kěle.",
+        indonesian: "Saya haus.",
+      },
+    ];
+  },
+
+  // Add new sentence (simulated API call)
+  async addSentence(sentence) {
+    await this.delay(800); // Simulate longer delay for POST
+
+    // Simulate server validation
+    if (
+      !sentence.hanzi.trim() ||
+      !sentence.pinyin.trim() ||
+      !sentence.indonesian.trim()
+    ) {
+      throw new Error("All fields are required");
+    }
+
+    // Simulate server-generated ID
+    return {
+      ...sentence,
+      id: Date.now(),
+    };
+  },
+
+  // Update existing sentence (simulated API call)
+  async updateSentence(id, sentence) {
+    await this.delay(600);
+
+    if (
+      !sentence.hanzi.trim() ||
+      !sentence.pinyin.trim() ||
+      !sentence.indonesian.trim()
+    ) {
+      throw new Error("All fields are required");
+    }
+
+    return {
+      id,
+      ...sentence,
+    };
+  },
+
+  // Delete sentence (simulated API call)
+  async deleteSentence(id) {
+    await this.delay(400);
+
+    // Simulate server error for specific IDs (for demo purposes)
+    if (id === 1) {
+      throw new Error("Cannot delete the first phrase - it is protected");
+    }
+
+    return { success: true };
+  },
+
+  // Import CSV data (simulated API call)
+  async importCSV(data) {
+    await this.delay(1200); // Simulate longer delay for bulk operations
+
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error("No valid data to import");
+    }
+
+    // Simulate server processing
+    const importedWithIds = data.map((item, index) => ({
+      ...item,
+      id: Date.now() + index,
+    }));
+
+    return importedWithIds;
+  },
+};
 
 const App = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [sentences, setSentences] = useState([]);
-  const [editingIndex, setEditingIndex] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState(null);
+  const [editingId, setEditingId] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState({
     hanzi: "",
@@ -30,87 +234,39 @@ const App = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [toast, setToast] = useState(null);
   const [importLoading, setImportLoading] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [copiedId, setCopiedId] = useState(null);
   const fileInputRef = useRef(null);
   const itemsPerPage = 10;
 
-  // Initialize theme based on system preference
+  // Load initial data from mock API
   useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        setLoading(true);
+        setApiError(null);
+        const data = await apiService.getSentences();
+        setSentences(data);
+      } catch (error) {
+        console.error("Failed to load sentences:", error);
+        setApiError("Failed to load phrase data. Please try again later.");
+        setToast({
+          message: "Failed to load data",
+          type: "error",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
     const systemTheme = window.matchMedia(
       "(prefers-color-scheme: dark)"
     ).matches;
     setDarkMode(systemTheme);
     setMounted(true);
 
-    // Initialize with default sentences
-    const initialSentences = [
-      { hanzi: "你好吗？", pinyin: "Nǐ hǎo ma?", indonesian: "Apa kabar?" },
-      {
-        hanzi: "我很好，谢谢。",
-        pinyin: "Wǒ hěn hǎo, xièxie.",
-        indonesian: "Saya baik, terima kasih.",
-      },
-      {
-        hanzi: "今天天气怎么样？",
-        pinyin: "Jīntiān tiānqì zěnmeyàng?",
-        indonesian: "Bagaimana cuaca hari ini?",
-      },
-      {
-        hanzi: "我想喝咖啡。",
-        pinyin: "Wǒ xiǎng hē kāfēi.",
-        indonesian: "Saya ingin minum kopi.",
-      },
-      {
-        hanzi: "请问，厕所在哪里？",
-        pinyin: "Qǐngwèn, cèsuǒ zài nǎlǐ?",
-        indonesian: "Permisi, di mana toilet?",
-      },
-      {
-        hanzi: "这个多少钱？",
-        pinyin: "Zhège duōshǎo qián?",
-        indonesian: "Berapa harganya?",
-      },
-      {
-        hanzi: "我喜欢学习中文。",
-        pinyin: "Wǒ xǐhuān xuéxí Zhōngwén.",
-        indonesian: "Saya suka belajar bahasa Mandarin.",
-      },
-      {
-        hanzi: "你叫什么名字？",
-        pinyin: "Nǐ jiào shénme míngzi?",
-        indonesian: "Siapa nama Anda?",
-      },
-      {
-        hanzi: "我明白了。",
-        pinyin: "Wǒ míngbáile.",
-        indonesian: "Saya mengerti.",
-      },
-      { hanzi: "对不起。", pinyin: "Duìbùqǐ.", indonesian: "Maaf." },
-      {
-        hanzi: "没关系。",
-        pinyin: "Méi guānxi.",
-        indonesian: "Tidak masalah.",
-      },
-      { hanzi: "再见！", pinyin: "Zàijiàn!", indonesian: "Sampai jumpa!" },
-      { hanzi: "谢谢你！", pinyin: "Xièxie nǐ!", indonesian: "Terima kasih!" },
-      { hanzi: "不客气。", pinyin: "Bú kèqì.", indonesian: "Sama-sama." },
-      {
-        hanzi: "多少钱？",
-        pinyin: "Duōshǎo qián?",
-        indonesian: "Berapa harganya?",
-      },
-      { hanzi: "太贵了！", pinyin: "Tài guìle!", indonesian: "Terlalu mahal!" },
-      {
-        hanzi: "便宜点吧。",
-        pinyin: "Piányi diǎn ba.",
-        indonesian: "Turunkan harganya sedikit.",
-      },
-      { hanzi: "好吃！", pinyin: "Hǎo chī!", indonesian: "Enak!" },
-      { hanzi: "难吃。", pinyin: "Nán chī.", indonesian: "Tidak enak." },
-      { hanzi: "我饿了。", pinyin: "Wǒ èle.", indonesian: "Saya lapar." },
-      { hanzi: "我渴了。", pinyin: "Wǒ kěle.", indonesian: "Saya haus." },
-    ];
-
-    setSentences(initialSentences);
+    loadInitialData();
   }, []);
 
   // Handle toast messages
@@ -120,6 +276,14 @@ const App = () => {
       return () => clearTimeout(timer);
     }
   }, [toast]);
+
+  // Reset copied state after delay
+  useEffect(() => {
+    if (copiedId) {
+      const timer = setTimeout(() => setCopiedId(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [copiedId]);
 
   // Apply theme to document
   useEffect(() => {
@@ -142,83 +306,223 @@ const App = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  // Handle adding new sentence
-  const handleAddSentence = () => {
+  // Handle adding new sentence with API simulation
+  const handleAddSentence = useCallback(async () => {
     if (
-      formData.hanzi.trim() &&
-      formData.pinyin.trim() &&
-      formData.indonesian.trim()
+      !formData.hanzi.trim() ||
+      !formData.pinyin.trim() ||
+      !formData.indonesian.trim()
     ) {
-      const newSentences = [...sentences, formData];
-      setSentences(newSentences);
+      setToast({
+        message: "Please fill in all fields",
+        type: "error",
+      });
+      return;
+    }
+
+    setFormLoading(true);
+    setApiError(null);
+
+    try {
+      // Optimistic update - add to UI immediately
+      const tempId = `temp_${Date.now()}`;
+      const newSentence = {
+        id: tempId,
+        ...formData,
+        optimistic: true,
+      };
+
+      setSentences((prev) => [...prev, newSentence]);
+      setIsAdding(false);
+      setFormData({ hanzi: "", pinyin: "", indonesian: "" });
+
+      // Actual API call
+      const savedSentence = await apiService.addSentence(formData);
+
+      // Replace optimistic update with actual data
+      setSentences((prev) =>
+        prev.map((sentence) =>
+          sentence.id === tempId ? savedSentence : sentence
+        )
+      );
+
+      setToast({
+        message: "Phrase added successfully!",
+        type: "success",
+      });
 
       // If adding to the last page that was full, go to new page
       if (currentPage === totalPages && sentences.length % itemsPerPage === 0) {
         setCurrentPage(totalPages + 1);
       }
+    } catch (error) {
+      console.error("Failed to add sentence:", error);
 
-      setFormData({ hanzi: "", pinyin: "", indonesian: "" });
-      setIsAdding(false);
+      // Revert optimistic update on error
+      setSentences((prev) => prev.filter((sentence) => sentence.id !== tempId));
 
-      // Show success toast
+      setApiError(error.message || "Failed to add phrase");
       setToast({
-        message: "Phrase added successfully!",
-        type: "success",
+        message: error.message || "Failed to add phrase",
+        type: "error",
       });
+    } finally {
+      setFormLoading(false);
     }
-  };
+  }, [formData, currentPage, totalPages, sentences.length]);
 
   // Handle editing sentence
-  const handleEditSentence = (globalIndex) => {
-    setFormData(sentences[globalIndex]);
-    setEditingIndex(globalIndex);
+  const handleEditSentence = (sentence) => {
+    setFormData({
+      hanzi: sentence.hanzi,
+      pinyin: sentence.pinyin,
+      indonesian: sentence.indonesian,
+    });
+    setEditingId(sentence.id);
   };
 
-  // Handle saving edited sentence
-  const handleSaveEdit = () => {
+  // Handle saving edited sentence with API simulation
+  const handleSaveEdit = useCallback(async () => {
     if (
-      formData.hanzi.trim() &&
-      formData.pinyin.trim() &&
-      formData.indonesian.trim()
+      !formData.hanzi.trim() ||
+      !formData.pinyin.trim() ||
+      !formData.indonesian.trim()
     ) {
-      const updatedSentences = [...sentences];
-      updatedSentences[editingIndex] = formData;
-      setSentences(updatedSentences);
-      setEditingIndex(null);
+      setToast({
+        message: "Please fill in all fields",
+        type: "error",
+      });
+      return;
+    }
+
+    setFormLoading(true);
+    setApiError(null);
+
+    try {
+      // Find the sentence being edited
+      const sentenceToEdit = sentences.find((s) => s.id === editingId);
+      if (!sentenceToEdit) throw new Error("Sentence not found");
+
+      // Optimistic update
+      const updatedSentence = {
+        id: editingId,
+        ...formData,
+        optimistic: true,
+      };
+
+      setSentences((prev) =>
+        prev.map((sentence) =>
+          sentence.id === editingId ? updatedSentence : sentence
+        )
+      );
+
+      // Actual API call
+      const savedSentence = await apiService.updateSentence(
+        editingId,
+        formData
+      );
+
+      // Replace optimistic update with actual data
+      setSentences((prev) =>
+        prev.map((sentence) =>
+          sentence.id === editingId ? savedSentence : sentence
+        )
+      );
+
+      setEditingId(null);
       setFormData({ hanzi: "", pinyin: "", indonesian: "" });
 
-      // Show success toast
       setToast({
         message: "Phrase updated successfully!",
         type: "success",
       });
+    } catch (error) {
+      console.error("Failed to update sentence:", error);
+
+      // Revert optimistic update on error
+      setSentences((prev) =>
+        prev.map((sentence) =>
+          sentence.id === editingId ? sentenceToEdit : sentence
+        )
+      );
+
+      setApiError(error.message || "Failed to update phrase");
+      setToast({
+        message: error.message || "Failed to update phrase",
+        type: "error",
+      });
+    } finally {
+      setFormLoading(false);
+    }
+  }, [formData, editingId, sentences]);
+
+  // Handle deleting sentence with API simulation
+  const handleDeleteSentence = async (id) => {
+    setApiError(null);
+
+    try {
+      // Optimistic update - remove from UI immediately
+      const sentenceToDelete = sentences.find((s) => s.id === id);
+      setSentences((prev) => prev.filter((sentence) => sentence.id !== id));
+
+      // Reset confirmation modal
+      setShowDeleteConfirm(null);
+
+      // Actual API call
+      await apiService.deleteSentence(id);
+
+      setToast({
+        message: "Phrase deleted successfully!",
+        type: "success",
+      });
+
+      // Adjust page if needed after deletion
+      const newTotalPages = Math.ceil((sentences.length - 1) / itemsPerPage);
+      if (currentPage > newTotalPages && newTotalPages > 0) {
+        setCurrentPage(newTotalPages);
+      } else if (newTotalPages === 0) {
+        setCurrentPage(1);
+      }
+    } catch (error) {
+      console.error("Failed to delete sentence:", error);
+
+      // Revert optimistic update on error
+      if (sentenceToDelete) {
+        setSentences((prev) => [...prev, sentenceToDelete]);
+      }
+
+      setApiError(error.message || "Failed to delete phrase");
+      setToast({
+        message: error.message || "Failed to delete phrase",
+        type: "error",
+      });
     }
   };
 
-  // Handle deleting sentence
-  const handleDeleteSentence = (globalIndex) => {
-    const updatedSentences = sentences.filter((_, i) => i !== globalIndex);
-    setSentences(updatedSentences);
+  // Handle copying sentence to clipboard
+  const handleCopySentence = async (sentence) => {
+    try {
+      // Format the text to copy
+      const formattedText = `${sentence.hanzi}\n${sentence.pinyin}\n${sentence.indonesian}\n\nHanzi: ${sentence.hanzi}\nPinyin: ${sentence.pinyin}\nIndonesian: ${sentence.indonesian}`;
 
-    // Adjust page if needed after deletion
-    const newTotalPages = Math.ceil(updatedSentences.length / itemsPerPage);
-    if (currentPage > newTotalPages && newTotalPages > 0) {
-      setCurrentPage(newTotalPages);
-    } else if (newTotalPages === 0) {
-      setCurrentPage(1);
+      await navigator.clipboard.writeText(formattedText);
+
+      setCopiedId(sentence.id);
+      setToast({
+        message: "Copied to clipboard!",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Failed to copy text:", error);
+      setToast({
+        message: "Failed to copy. Please try again.",
+        type: "error",
+      });
     }
-
-    setShowDeleteConfirm(null);
-
-    // Show success toast
-    setToast({
-      message: "Phrase deleted successfully!",
-      type: "success",
-    });
   };
 
-  // Handle CSV file import
-  const handleFileImport = (e) => {
+  // Handle CSV file import with API simulation
+  const handleFileImport = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -232,64 +536,75 @@ const App = () => {
     }
 
     setImportLoading(true);
+    setApiError(null);
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const content = event.target.result;
-        const importedData = parseCSV(content);
+    try {
+      const content = await readFileAsText(file);
+      const importedData = parseCSV(content);
 
-        if (importedData.length === 0) {
-          throw new Error("No valid data found in CSV");
-        }
-
-        // Validate data structure
-        const invalidRows = importedData.filter(
-          (row) => !row.hanzi || !row.pinyin || !row.indonesian
-        );
-
-        if (invalidRows.length > 0) {
-          throw new Error(
-            `CSV contains ${invalidRows.length} invalid rows with missing data`
-          );
-        }
-
-        // Merge with existing data
-        const newSentences = [...sentences, ...importedData];
-        setSentences(newSentences);
-
-        // Reset to first page if new data spans multiple pages
-        if (newSentences.length > itemsPerPage) {
-          setCurrentPage(1);
-        }
-
-        setToast({
-          message: `Successfully imported ${importedData.length} phrases!`,
-          type: "success",
-        });
-      } catch (error) {
-        setToast({
-          message: `Import failed: ${error.message}`,
-          type: "error",
-        });
-      } finally {
-        setImportLoading(false);
-        // Reset file input
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
+      if (importedData.length === 0) {
+        throw new Error("No valid data found in CSV");
       }
-    };
 
-    reader.onerror = () => {
+      // Validate data structure
+      const invalidRows = importedData.filter(
+        (row) => !row.hanzi || !row.pinyin || !row.indonesian
+      );
+
+      if (invalidRows.length > 0) {
+        throw new Error(
+          `CSV contains ${invalidRows.length} invalid rows with missing data`
+        );
+      }
+
+      // Optimistic update - show loading state
       setToast({
-        message: "Error reading file",
+        message: `Importing ${importedData.length} phrases...`,
+        type: "info",
+      });
+
+      // Actual API call
+      const importedWithIds = await apiService.importCSV(importedData);
+
+      // Update state
+      setSentences((prev) => [...prev, ...importedWithIds]);
+
+      // Reset to first page if new data spans multiple pages
+      if (
+        importedWithIds.length > 0 &&
+        sentences.length + importedWithIds.length > itemsPerPage
+      ) {
+        setCurrentPage(1);
+      }
+
+      setToast({
+        message: `Successfully imported ${importedWithIds.length} phrases!`,
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Import failed:", error);
+      setApiError(error.message || "Import failed");
+      setToast({
+        message: `Import failed: ${error.message || "Unknown error"}`,
         type: "error",
       });
+    } finally {
       setImportLoading(false);
-    };
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
-    reader.readAsText(file);
+  // Helper function to read file as text
+  const readFileAsText = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => resolve(event.target.result);
+      reader.onerror = (error) => reject(error);
+      reader.readAsText(file);
+    });
   };
 
   // Parse CSV content with semicolon delimiter
@@ -363,6 +678,26 @@ const App = () => {
     exit: { opacity: 0, y: 50 },
   };
 
+  const mobileMenuVariants = {
+    hidden: { opacity: 0, x: "100%" },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        type: "spring",
+        damping: 25,
+        stiffness: 150,
+      },
+    },
+    exit: {
+      opacity: 0,
+      x: "100%",
+      transition: {
+        duration: 0.2,
+      },
+    },
+  };
+
   if (!mounted) return null;
 
   return (
@@ -371,12 +706,31 @@ const App = () => {
         darkMode
           ? "bg-gradient-to-br from-gray-900 to-indigo-900"
           : "bg-gradient-to-br from-indigo-50 to-purple-100"
-      } py-6 px-4 sm:px-6 lg:px-8`}
+      } py-4 px-4 sm:px-6 lg:px-8`}
     >
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
+        {/* API Error Banner */}
+        <AnimatePresence>
+          {apiError && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className={`mb-4 p-3 rounded-lg flex items-center ${
+                darkMode
+                  ? "bg-red-900/30 border border-red-800 text-red-200"
+                  : "bg-red-50 border border-red-200 text-red-700"
+              }`}
+            >
+              <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
+              <span className="text-sm">{apiError}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Header with theme toggle */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-6">
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+          <div className="flex items-center space-x-4 w-full sm:w-auto">
             <div
               className={`p-3 rounded-2xl ${
                 darkMode
@@ -390,9 +744,9 @@ const App = () => {
                 }`}
               />
             </div>
-            <div>
+            <div className="flex-1">
               <h1
-                className={`text-3xl md:text-4xl font-bold ${
+                className={`text-2xl md:text-3xl font-bold ${
                   darkMode
                     ? "text-white"
                     : "text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-700"
@@ -401,7 +755,7 @@ const App = () => {
                 Chinese-Indonesian Phrasebook
               </h1>
               <p
-                className={`mt-2 ${
+                className={`mt-1 text-sm ${
                   darkMode ? "text-gray-300" : "text-gray-600"
                 }`}
               >
@@ -410,7 +764,22 @@ const App = () => {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+          {/* Mobile menu button */}
+          <div className="sm:hidden flex items-center w-full justify-end">
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className={`p-2 rounded-full ${
+                darkMode
+                  ? "text-gray-300 hover:bg-gray-800"
+                  : "text-gray-700 hover:bg-gray-100"
+              }`}
+              aria-label="Open menu"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+          </div>
+
+          <div className="hidden sm:flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
             <div className="flex space-x-3 w-full sm:w-auto">
               <input
                 type="file"
@@ -422,7 +791,7 @@ const App = () => {
               <motion.button
                 onClick={triggerFileInput}
                 disabled={importLoading}
-                className={`flex-1 sm:flex-initial flex items-center justify-center px-4 py-2 rounded-xl font-medium shadow-md transition-all duration-300 ${
+                className={`flex-1 sm:flex-initial flex items-center justify-center px-3 py-2 sm:px-4 sm:py-2 rounded-xl font-medium text-sm sm:text-base shadow-md transition-all duration-300 ${
                   darkMode
                     ? "bg-blue-600 hover:bg-blue-700 text-white"
                     : "bg-blue-500 hover:bg-blue-600 text-white"
@@ -432,21 +801,22 @@ const App = () => {
               >
                 {importLoading ? (
                   <div className="flex items-center">
-                    <div className="w-4 h-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></div>
-                    <span>Importing...</span>
+                    <Loader className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin text-white" />
+                    <span className="hidden xs:inline">Importing...</span>
+                    <span className="xs:hidden">...</span>
                   </div>
                 ) : (
                   <>
-                    <Upload className="w-4 h-4 mr-2" />
-                    <span className="hidden sm:inline">Import CSV</span>
-                    <span className="sm:hidden">Import</span>
+                    <Upload className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden xs:inline">Import CSV</span>
+                    <span className="xs:hidden">Import</span>
                   </>
                 )}
               </motion.button>
 
               <motion.button
                 onClick={() => setIsAdding(true)}
-                className={`flex-1 sm:flex-initial flex items-center justify-center px-4 py-2 rounded-xl font-medium shadow-md transition-all duration-300 ${
+                className={`flex-1 sm:flex-initial flex items-center justify-center px-3 py-2 sm:px-4 sm:py-2 rounded-xl font-medium text-sm sm:text-base shadow-md transition-all duration-300 ${
                   darkMode
                     ? "bg-green-600 hover:bg-green-700 text-white"
                     : "bg-green-500 hover:bg-green-600 text-white"
@@ -454,9 +824,9 @@ const App = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Plus className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Add Phrase</span>
-                <span className="sm:hidden">Add</span>
+                <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Add Phrase</span>
+                <span className="xs:hidden">Add</span>
               </motion.button>
             </div>
 
@@ -465,7 +835,7 @@ const App = () => {
               variants={toggleVariants}
               initial="initial"
               animate={darkMode ? "animate" : "initial"}
-              className={`p-3 rounded-full shadow-lg transition-all duration-300 ${
+              className={`p-2.5 sm:p-3 rounded-full shadow-md transition-all duration-300 ${
                 darkMode
                   ? "bg-yellow-400 text-gray-900 hover:bg-yellow-300"
                   : "bg-gray-800 text-yellow-300 hover:bg-gray-700"
@@ -475,22 +845,138 @@ const App = () => {
               }
             >
               {darkMode ? (
-                <Sun className="w-6 h-6" />
+                <Sun className="w-5 h-5 sm:w-6 sm:h-6" />
               ) : (
-                <Moon className="w-6 h-6" />
+                <Moon className="w-5 h-5 sm:w-6 sm:h-6" />
               )}
             </motion.button>
           </div>
         </div>
 
-        {/* CSV Format Guide */}
+        {/* Mobile Menu (Slide-in panel) */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              variants={mobileMenuVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className={`fixed inset-0 z-40 sm:hidden ${
+                darkMode ? "bg-gray-900/95" : "bg-white/95"
+              }`}
+            >
+              <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+                <h2
+                  className={`text-xl font-bold ${
+                    darkMode ? "text-white" : "text-gray-900"
+                  }`}
+                >
+                  Menu
+                </h2>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`p-2 rounded-lg ${
+                    darkMode
+                      ? "text-gray-300 hover:bg-gray-800"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <XIcon className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="p-4 space-y-4">
+                <input
+                  type="file"
+                  accept=".csv"
+                  ref={fileInputRef}
+                  onChange={handleFileImport}
+                  className="hidden"
+                />
+                <motion.button
+                  onClick={() => {
+                    triggerFileInput();
+                    setMobileMenuOpen(false);
+                  }}
+                  disabled={importLoading}
+                  className={`w-full flex items-center justify-center px-4 py-3 rounded-xl font-medium shadow-md transition-all duration-300 ${
+                    darkMode
+                      ? "bg-blue-600 hover:bg-blue-700 text-white"
+                      : "bg-blue-500 hover:bg-blue-600 text-white"
+                  } ${importLoading ? "opacity-70 cursor-not-allowed" : ""}`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {importLoading ? (
+                    <div className="flex items-center">
+                      <Loader className="w-4 h-4 mr-2 animate-spin" />
+                      <span>Importing...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Import CSV
+                    </>
+                  )}
+                </motion.button>
+
+                <motion.button
+                  onClick={() => {
+                    setIsAdding(true);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-center px-4 py-3 rounded-xl font-medium shadow-md transition-all duration-300 ${
+                    darkMode
+                      ? "bg-green-600 hover:bg-green-700 text-white"
+                      : "bg-green-500 hover:bg-green-600 text-white"
+                  }`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Phrase
+                </motion.button>
+
+                <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <motion.button
+                    onClick={() => {
+                      toggleTheme();
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-center px-4 py-3 rounded-xl font-medium shadow-md transition-all duration-300 ${
+                      darkMode
+                        ? "bg-yellow-400 text-gray-900 hover:bg-yellow-300"
+                        : "bg-gray-800 text-yellow-300 hover:bg-gray-700"
+                    }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {darkMode ? (
+                      <>
+                        <Sun className="w-4 h-4 mr-2" />
+                        Light Mode
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="w-4 h-4 mr-2" />
+                        Dark Mode
+                      </>
+                    )}
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* CSV Format Guide - Mobile optimized */}
         <AnimatePresence>
           {isAdding && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className={`mb-6 rounded-xl p-4 text-sm ${
+              className={`mb-4 sm:mb-6 rounded-xl p-3 sm:p-4 text-xs sm:text-sm ${
                 darkMode
                   ? "bg-blue-900/30 border border-blue-800"
                   : "bg-blue-50 border border-blue-200"
@@ -498,7 +984,7 @@ const App = () => {
             >
               <div className="flex items-start">
                 <FileText
-                  className={`w-5 h-5 mt-0.5 mr-2 flex-shrink-0 ${
+                  className={`w-4 h-4 sm:w-5 sm:h-5 mt-0.5 mr-2 flex-shrink-0 ${
                     darkMode ? "text-blue-400" : "text-blue-600"
                   }`}
                 />
@@ -511,19 +997,20 @@ const App = () => {
                     CSV Format Requirements:
                   </p>
                   <ul
-                    className={`mt-1 list-disc pl-5 space-y-1 ${
+                    className={`mt-1 list-disc pl-4 space-y-0.5 ${
                       darkMode ? "text-blue-100" : "text-blue-700"
                     }`}
                   >
                     <li>
-                      Must have headers:{" "}
+                      Headers:{" "}
                       <span className="font-mono">hanzi;pinyin;indonesian</span>
                     </li>
-                    <li>Use semicolon (;) as delimiter between columns</li>
-                    <li>Each row must contain all three fields</li>
+                    <li>Delimiter: semicolon (;) between columns</li>
                     <li>
                       Example:{" "}
-                      <span className="font-mono">你好;Nǐ hǎo;Halo</span>
+                      <span className="font-mono break-all">
+                        你好;Nǐ hǎo;Halo
+                      </span>
                     </li>
                   </ul>
                 </div>
@@ -532,22 +1019,22 @@ const App = () => {
           )}
         </AnimatePresence>
 
-        {/* Add/Edit Form */}
+        {/* Add/Edit Form - Mobile optimized */}
         <AnimatePresence>
-          {(isAdding || editingIndex !== null) && (
+          {(isAdding || editingId !== null) && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className={`mb-8 rounded-2xl p-6 shadow-lg ${
+              className={`mb-6 sm:mb-8 rounded-2xl p-4 sm:p-6 shadow-lg ${
                 darkMode
                   ? "bg-gray-800 border border-indigo-700"
                   : "bg-white border border-indigo-200"
               }`}
             >
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex justify-between items-center mb-3 sm:mb-4">
                 <h2
-                  className={`text-xl font-bold ${
+                  className={`text-lg sm:text-xl font-bold ${
                     darkMode ? "text-white" : "text-indigo-700"
                   }`}
                 >
@@ -556,25 +1043,26 @@ const App = () => {
                 <button
                   onClick={() => {
                     setIsAdding(false);
-                    setEditingIndex(null);
+                    setEditingId(null);
                     setFormData({ hanzi: "", pinyin: "", indonesian: "" });
                   }}
                   className={`p-2 rounded-full ${
                     darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"
                   }`}
+                  aria-label="Close form"
                 >
                   <X
-                    className={`w-5 h-5 ${
+                    className={`w-4 h-4 sm:w-5 sm:h-5 ${
                       darkMode ? "text-gray-300" : "text-gray-500"
                     }`}
                   />
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 mb-4 sm:mb-6">
                 <div>
                   <label
-                    className={`block text-sm font-medium mb-1 ${
+                    className={`block text-xs sm:text-sm font-medium mb-1 ${
                       darkMode ? "text-gray-300" : "text-gray-700"
                     }`}
                   >
@@ -585,7 +1073,7 @@ const App = () => {
                     name="hanzi"
                     value={formData.hanzi}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-2 rounded-lg border ${
+                    className={`w-full px-3 py-2 sm:px-4 sm:py-2 rounded-lg border text-sm ${
                       darkMode
                         ? "bg-gray-700 border-gray-600 text-white focus:border-indigo-400"
                         : "bg-white border-gray-300 text-gray-900 focus:border-indigo-500"
@@ -596,7 +1084,7 @@ const App = () => {
                 </div>
                 <div>
                   <label
-                    className={`block text-sm font-medium mb-1 ${
+                    className={`block text-xs sm:text-sm font-medium mb-1 ${
                       darkMode ? "text-gray-300" : "text-gray-700"
                     }`}
                   >
@@ -607,7 +1095,7 @@ const App = () => {
                     name="pinyin"
                     value={formData.pinyin}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-2 rounded-lg border ${
+                    className={`w-full px-3 py-2 sm:px-4 sm:py-2 rounded-lg border text-sm ${
                       darkMode
                         ? "bg-gray-700 border-gray-600 text-white focus:border-indigo-400"
                         : "bg-white border-gray-300 text-gray-900 focus:border-indigo-500"
@@ -617,7 +1105,7 @@ const App = () => {
                 </div>
                 <div>
                   <label
-                    className={`block text-sm font-medium mb-1 ${
+                    className={`block text-xs sm:text-sm font-medium mb-1 ${
                       darkMode ? "text-gray-300" : "text-gray-700"
                     }`}
                   >
@@ -628,7 +1116,7 @@ const App = () => {
                     name="indonesian"
                     value={formData.indonesian}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-2 rounded-lg border ${
+                    className={`w-full px-3 py-2 sm:px-4 sm:py-2 rounded-lg border text-sm ${
                       darkMode
                         ? "bg-gray-700 border-gray-600 text-white focus:border-indigo-400"
                         : "bg-white border-gray-300 text-gray-900 focus:border-indigo-500"
@@ -638,14 +1126,14 @@ const App = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-3">
+              <div className="flex flex-col xs:flex-row xs:justify-end gap-2">
                 <button
                   onClick={() => {
                     setIsAdding(false);
-                    setEditingIndex(null);
+                    setEditingId(null);
                     setFormData({ hanzi: "", pinyin: "", indonesian: "" });
                   }}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  className={`w-full xs:w-auto px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                     darkMode
                       ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
                       : "bg-gray-200 hover:bg-gray-300 text-gray-800"
@@ -656,11 +1144,13 @@ const App = () => {
                 <button
                   onClick={isAdding ? handleAddSentence : handleSaveEdit}
                   disabled={
+                    formLoading ||
                     !formData.hanzi.trim() ||
                     !formData.pinyin.trim() ||
                     !formData.indonesian.trim()
                   }
-                  className={`px-4 py-2 rounded-lg font-medium flex items-center transition-all ${
+                  className={`w-full xs:w-auto px-4 py-2 rounded-lg font-medium text-sm flex items-center justify-center transition-all ${
+                    formLoading ||
                     !formData.hanzi.trim() ||
                     !formData.pinyin.trim() ||
                     !formData.indonesian.trim()
@@ -670,7 +1160,11 @@ const App = () => {
                       : "bg-indigo-600 hover:bg-indigo-700 text-white"
                   }`}
                 >
-                  <Save className="w-4 h-4 mr-2" />
+                  {formLoading ? (
+                    <Loader className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                  ) : (
+                    <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  )}
                   {isAdding ? "Add Phrase" : "Save Changes"}
                 </button>
               </div>
@@ -678,208 +1172,278 @@ const App = () => {
           )}
         </AnimatePresence>
 
-        {/* Phrase table */}
-        <div
-          className={`rounded-3xl shadow-2xl overflow-hidden ${
-            darkMode
-              ? "bg-gray-800 border border-indigo-900"
-              : "bg-white border border-indigo-100"
-          }`}
-        >
+        {/* Loading State */}
+        {loading ? (
           <div
-            className={`grid grid-cols-4 ${
-              darkMode ? "bg-indigo-900/70" : "bg-indigo-600"
-            } text-white font-bold`}
-          >
-            <div className="p-4 border-r border-indigo-400/50 flex items-center justify-center">
-              <span className="hidden sm:inline">Hanzi (汉字)</span>
-              <span className="sm:hidden">Hanzi</span>
-            </div>
-            <div className="p-4 border-r border-indigo-400/50 flex items-center justify-center">
-              <span className="hidden sm:inline">Pinyin</span>
-              <span className="sm:hidden">Pinyin</span>
-            </div>
-            <div className="p-4 border-r border-indigo-400/50 flex items-center justify-center">
-              <span className="hidden sm:inline">Indonesian</span>
-              <span className="sm:hidden">Indonesian</span>
-            </div>
-            <div className="p-4 flex items-center justify-center">Actions</div>
-          </div>
-
-          <AnimatePresence mode="popLayout">
-            {currentSentences.map((sentence, localIndex) => {
-              const globalIndex = indexOfFirstItem + localIndex;
-              return (
-                <motion.div
-                  key={globalIndex}
-                  initial="hidden"
-                  animate="visible"
-                  exit={{ opacity: 0, height: 0 }}
-                  variants={itemVariants}
-                  transition={{ duration: 0.3 }}
-                  className={`grid grid-cols-4 ${
-                    localIndex % 2 === 0
-                      ? darkMode
-                        ? "bg-gray-800"
-                        : "bg-white"
-                      : darkMode
-                      ? "bg-gray-900/70"
-                      : "bg-indigo-50"
-                  } border-b border-gray-200 dark:border-gray-700`}
-                >
-                  <div
-                    className={`p-4 font-serif text-lg ${
-                      darkMode ? "text-gray-200" : "text-gray-800"
-                    } flex items-center justify-center sm:justify-start`}
-                  >
-                    {sentence.hanzi}
-                  </div>
-                  <div
-                    className={`p-4 font-medium ${
-                      darkMode ? "text-indigo-200" : "text-indigo-700"
-                    } flex items-center justify-center sm:justify-start`}
-                  >
-                    {sentence.pinyin}
-                  </div>
-                  <div
-                    className={`p-4 ${
-                      darkMode ? "text-gray-300" : "text-gray-700"
-                    } flex items-center justify-center sm:justify-start`}
-                  >
-                    {sentence.indonesian}
-                  </div>
-                  <div className="p-4 flex items-center justify-center space-x-2">
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => handleEditSentence(globalIndex)}
-                      className={`p-2 rounded-lg transition-all ${
-                        darkMode
-                          ? "bg-blue-900/50 hover:bg-blue-800 text-blue-300"
-                          : "bg-blue-50 hover:bg-blue-100 text-blue-600"
-                      }`}
-                      aria-label="Edit sentence"
-                    >
-                      <Edit className="w-5 h-5" />
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => setShowDeleteConfirm(globalIndex)}
-                      className={`p-2 rounded-lg transition-all ${
-                        darkMode
-                          ? "bg-red-900/50 hover:bg-red-800 text-red-300"
-                          : "bg-red-50 hover:bg-red-100 text-red-600"
-                      }`}
-                      aria-label="Delete sentence"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </motion.button>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-
-          {currentSentences.length === 0 && (
-            <div
-              className={`py-16 text-center ${
-                darkMode ? "text-gray-400" : "text-gray-500"
-              }`}
-            >
-              <p className="text-xl font-medium">
-                No phrases available on this page
-              </p>
-              <p className="mt-2">
-                Try adding new phrases or checking other pages
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`mt-8 flex justify-center items-center space-x-2 ${
-              darkMode ? "text-gray-300" : "text-gray-700"
+            className={`flex flex-col items-center justify-center py-16 rounded-2xl ${
+              darkMode
+                ? "bg-gray-800 border border-indigo-900"
+                : "bg-white border border-indigo-100"
             }`}
           >
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className={`p-3 rounded-lg flex items-center justify-center transition-all ${
-                currentPage === 1
-                  ? darkMode
-                    ? "text-gray-600 cursor-not-allowed"
-                    : "text-gray-400 cursor-not-allowed"
-                  : darkMode
-                  ? "text-indigo-300 hover:bg-indigo-900/50"
-                  : "text-indigo-600 hover:bg-indigo-50"
+            <Loader
+              className={`w-8 h-8 animate-spin ${
+                darkMode ? "text-indigo-400" : "text-indigo-600"
+              }`}
+            />
+            <p
+              className={`mt-4 text-lg font-medium ${
+                darkMode ? "text-gray-300" : "text-gray-600"
               }`}
             >
-              <ChevronLeft className="w-5 h-5 mr-1" />
-              <span className="hidden sm:inline">Previous</span>
-            </button>
+              Loading phrases...
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Phrase table - Mobile responsive version */}
+            <div
+              className={`overflow-x-auto rounded-2xl sm:rounded-3xl shadow-lg ${
+                darkMode
+                  ? "bg-gray-800 border border-indigo-900"
+                  : "bg-white border border-indigo-100"
+              }`}
+            >
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead
+                  className={`${
+                    darkMode ? "bg-indigo-900/70" : "bg-indigo-600"
+                  }`}
+                >
+                  <tr>
+                    <th className="px-3 py-3 xs:px-4 xs:py-4 text-left text-xs xs:text-sm font-medium text-white uppercase tracking-wider">
+                      <span className="hidden sm:inline">Hanzi (汉字)</span>
+                      <span className="sm:hidden">Hanzi</span>
+                    </th>
+                    <th className="px-3 py-3 xs:px-4 xs:py-4 text-left text-xs xs:text-sm font-medium text-white uppercase tracking-wider hidden xs:table-cell">
+                      <span className="hidden sm:inline">Pinyin</span>
+                      <span className="sm:hidden">Pinyin</span>
+                    </th>
+                    <th className="px-3 py-3 xs:px-4 xs:py-4 text-left text-xs xs:text-sm font-medium text-white uppercase tracking-wider hidden md:table-cell">
+                      Indonesian
+                    </th>
+                    <th className="px-3 py-3 xs:px-4 xs:py-4 text-left text-xs xs:text-sm font-medium text-white uppercase tracking-wider text-center w-28 sm:w-32">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  <AnimatePresence mode="popLayout">
+                    {currentSentences.map((sentence) => (
+                      <motion.tr
+                        key={sentence.id}
+                        initial="hidden"
+                        animate="visible"
+                        exit={{ opacity: 0, height: 0 }}
+                        variants={itemVariants}
+                        transition={{ duration: 0.3 }}
+                        className={`${
+                          sentence.id % 2 === 0
+                            ? darkMode
+                              ? "bg-gray-800"
+                              : "bg-white"
+                            : darkMode
+                            ? "bg-gray-900/70"
+                            : "bg-indigo-50"
+                        } ${sentence.optimistic ? "opacity-70" : ""}`}
+                      >
+                        <td
+                          className={`px-3 py-3 xs:px-4 xs:py-4 whitespace-nowrap font-serif text-base ${
+                            darkMode ? "text-gray-200" : "text-gray-800"
+                          }`}
+                        >
+                          <div className="font-medium">{sentence.hanzi}</div>
+                          <div
+                            className="mt-1 flex xs:hidden text-xs ${
+                            darkMode ? 'text-indigo-300' : 'text-indigo-600'
+                          }"
+                          >
+                            {sentence.pinyin}
+                          </div>
+                          <div
+                            className="mt-1 flex xs:hidden text-xs ${
+                            darkMode ? 'text-gray-400' : 'text-gray-600'
+                          }"
+                          >
+                            {sentence.indonesian}
+                          </div>
+                        </td>
+                        <td
+                          className={`px-3 py-3 xs:px-4 xs:py-4 whitespace-nowrap hidden xs:table-cell ${
+                            darkMode ? "text-indigo-200" : "text-indigo-700"
+                          }`}
+                        >
+                          {sentence.pinyin}
+                        </td>
+                        <td
+                          className={`px-3 py-3 xs:px-4 xs:py-4 whitespace-nowrap hidden md:table-cell ${
+                            darkMode ? "text-gray-300" : "text-gray-700"
+                          }`}
+                        >
+                          {sentence.indonesian}
+                        </td>
+                        <td className="px-3 py-3 xs:px-4 xs:py-4 whitespace-nowrap text-center">
+                          <div className="flex justify-center space-x-1 sm:space-x-2">
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => handleCopySentence(sentence)}
+                              className={`p-1.5 rounded-lg transition-all ${
+                                copiedId === sentence.id
+                                  ? darkMode
+                                    ? "bg-green-900/50 text-green-300"
+                                    : "bg-green-50 text-green-600"
+                                  : darkMode
+                                  ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                              }`}
+                              aria-label="Copy sentence"
+                            >
+                              {copiedId === sentence.id ? (
+                                <Check className="w-4 h-4" />
+                              ) : (
+                                <Copy className="w-4 h-4" />
+                              )}
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => handleEditSentence(sentence)}
+                              className={`p-1.5 rounded-lg transition-all ${
+                                darkMode
+                                  ? "bg-blue-900/50 hover:bg-blue-800 text-blue-300"
+                                  : "bg-blue-50 hover:bg-blue-100 text-blue-600"
+                              }`}
+                              aria-label="Edit sentence"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => setShowDeleteConfirm(sentence.id)}
+                              className={`p-1.5 rounded-lg transition-all ${
+                                darkMode
+                                  ? "bg-red-900/50 hover:bg-red-800 text-red-300"
+                                  : "bg-red-50 hover:bg-red-100 text-red-600"
+                              }`}
+                              aria-label="Delete sentence"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </motion.button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
+                </tbody>
+              </table>
 
-            <AnimatePresence mode="wait">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (pageNumber) => (
-                  <motion.button
-                    key={pageNumber}
-                    initial="hidden"
-                    animate="visible"
-                    exit="hidden"
-                    variants={paginationItemVariants}
-                    onClick={() => setCurrentPage(pageNumber)}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm transition-all ${
-                      currentPage === pageNumber
-                        ? darkMode
-                          ? "bg-indigo-600 text-white shadow-lg"
-                          : "bg-indigo-600 text-white shadow-lg"
-                        : darkMode
-                        ? "hover:bg-gray-700"
-                        : "hover:bg-gray-200"
-                    }`}
-                  >
-                    {pageNumber}
-                  </motion.button>
-                )
+              {currentSentences.length === 0 && (
+                <div
+                  className={`py-12 sm:py-16 text-center ${
+                    darkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
+                  <p className="text-base sm:text-lg font-medium">
+                    No phrases available on this page
+                  </p>
+                  <p className="mt-1 text-xs sm:text-sm">
+                    Try adding new phrases or checking other pages
+                  </p>
+                </div>
               )}
-            </AnimatePresence>
+            </div>
 
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-              className={`p-3 rounded-lg flex items-center justify-center transition-all ${
-                currentPage === totalPages
-                  ? darkMode
-                    ? "text-gray-600 cursor-not-allowed"
-                    : "text-gray-400 cursor-not-allowed"
-                  : darkMode
-                  ? "text-indigo-300 hover:bg-indigo-900/50"
-                  : "text-indigo-600 hover:bg-indigo-50"
+            {/* Mobile Stats */}
+            <div
+              className={`mt-3 sm:mt-6 text-center text-xs sm:text-sm ${
+                darkMode ? "text-gray-400" : "text-gray-600"
               }`}
             >
-              <span className="hidden sm:inline">Next</span>
-              <ChevronRight className="w-5 h-5 ml-1" />
-            </button>
-          </motion.div>
-        )}
+              <p>
+                Showing {indexOfFirstItem + 1} to{" "}
+                {Math.min(indexOfLastItem, sentences.length)} of{" "}
+                {sentences.length} phrases
+              </p>
+            </div>
 
-        {/* Stats */}
-        <div
-          className={`mt-6 text-center text-sm ${
-            darkMode ? "text-gray-400" : "text-gray-600"
-          }`}
-        >
-          Showing {indexOfFirstItem + 1} to{" "}
-          {Math.min(indexOfLastItem, sentences.length)} of {sentences.length}{" "}
-          phrases
-        </div>
+            {/* Pagination Controls - Mobile optimized */}
+            {totalPages > 1 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`mt-4 sm:mt-8 flex flex-wrap justify-center items-center gap-2 ${
+                  darkMode ? "text-gray-300" : "text-gray-700"
+                }`}
+              >
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                  className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg flex items-center justify-center text-xs sm:text-sm transition-all ${
+                    currentPage === 1
+                      ? darkMode
+                        ? "text-gray-600 cursor-not-allowed"
+                        : "text-gray-400 cursor-not-allowed"
+                      : darkMode
+                      ? "text-indigo-300 hover:bg-indigo-900/50"
+                      : "text-indigo-600 hover:bg-indigo-50"
+                  }`}
+                >
+                  <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  <span className="hidden xs:inline">Prev</span>
+                </button>
+
+                <div className="flex flex-wrap justify-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (pageNumber) => (
+                      <motion.button
+                        key={pageNumber}
+                        initial="hidden"
+                        animate="visible"
+                        exit="hidden"
+                        variants={paginationItemVariants}
+                        onClick={() => setCurrentPage(pageNumber)}
+                        className={`w-7 h-7 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-medium text-xs sm:text-sm transition-all ${
+                          currentPage === pageNumber
+                            ? darkMode
+                              ? "bg-indigo-600 text-white shadow-md"
+                              : "bg-indigo-600 text-white shadow-md"
+                            : darkMode
+                            ? "hover:bg-gray-700"
+                            : "hover:bg-gray-200"
+                        }`}
+                      >
+                        {pageNumber}
+                      </motion.button>
+                    )
+                  )}
+                </div>
+
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg flex items-center justify-center text-xs sm:text-sm transition-all ${
+                    currentPage === totalPages
+                      ? darkMode
+                        ? "text-gray-600 cursor-not-allowed"
+                        : "text-gray-400 cursor-not-allowed"
+                      : darkMode
+                      ? "text-indigo-300 hover:bg-indigo-900/50"
+                      : "text-indigo-600 hover:bg-indigo-50"
+                  }`}
+                >
+                  <span className="hidden xs:inline">Next</span>
+                  <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
+                </button>
+              </motion.div>
+            )}
+          </>
+        )}
 
         {/* Delete confirmation modal */}
         <AnimatePresence>
@@ -896,26 +1460,26 @@ const App = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className={`max-w-md w-full rounded-2xl p-6 ${
+                className={`max-w-md w-full rounded-2xl p-4 sm:p-6 ${
                   darkMode
                     ? "bg-gray-800 border border-red-800"
                     : "bg-white border border-red-200"
                 } shadow-2xl`}
               >
-                <div className="flex items-center mb-4">
+                <div className="flex items-center mb-3 sm:mb-4">
                   <div
-                    className={`p-3 rounded-full ${
+                    className={`p-2.5 sm:p-4 rounded-full ${
                       darkMode ? "bg-red-900/50" : "bg-red-50"
                     }`}
                   >
                     <Trash2
-                      className={`w-6 h-6 ${
+                      className={`w-5 h-5 sm:w-6 sm:h-6 ${
                         darkMode ? "text-red-400" : "text-red-600"
                       }`}
                     />
                   </div>
                   <h3
-                    className={`ml-4 text-xl font-bold ${
+                    className={`ml-3 text-lg sm:text-xl font-bold ${
                       darkMode ? "text-white" : "text-gray-900"
                     }`}
                   >
@@ -923,17 +1487,17 @@ const App = () => {
                   </h3>
                 </div>
                 <p
-                  className={`mb-6 ${
+                  className={`mb-4 text-sm sm:text-base ${
                     darkMode ? "text-gray-300" : "text-gray-600"
                   }`}
                 >
                   Are you sure you want to delete this phrase? This action
                   cannot be undone.
                 </p>
-                <div className="flex justify-end space-x-3">
+                <div className="flex flex-col xs:flex-row xs:justify-end gap-2">
                   <button
                     onClick={() => setShowDeleteConfirm(null)}
-                    className={`px-4 py-2 rounded-lg font-medium ${
+                    className={`w-full xs:w-auto px-4 py-2 rounded-lg font-medium text-sm ${
                       darkMode
                         ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
                         : "bg-gray-200 hover:bg-gray-300 text-gray-800"
@@ -943,7 +1507,7 @@ const App = () => {
                   </button>
                   <button
                     onClick={() => handleDeleteSentence(showDeleteConfirm)}
-                    className={`px-4 py-2 rounded-lg font-medium ${
+                    className={`w-full xs:w-auto px-4 py-2 rounded-lg font-medium text-sm ${
                       darkMode
                         ? "bg-red-700 hover:bg-red-600 text-white"
                         : "bg-red-500 hover:bg-red-600 text-white"
@@ -957,7 +1521,7 @@ const App = () => {
           )}
         </AnimatePresence>
 
-        {/* Toast Notification */}
+        {/* Toast Notification - Mobile optimized */}
         <AnimatePresence>
           {toast && (
             <motion.div
@@ -965,34 +1529,40 @@ const App = () => {
               initial="initial"
               animate="animate"
               exit="exit"
-              className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-xl shadow-lg z-40 ${
+              className={`fixed bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl shadow-lg z-40 text-sm ${
                 toast.type === "success"
                   ? darkMode
                     ? "bg-green-900/70 border border-green-700"
                     : "bg-green-500 text-white"
+                  : toast.type === "error"
+                  ? darkMode
+                    ? "bg-red-900/70 border border-red-700"
+                    : "bg-red-500 text-white"
                   : darkMode
-                  ? "bg-red-900/70 border border-red-700"
-                  : "bg-red-500 text-white"
+                  ? "bg-blue-900/70 border border-blue-700"
+                  : "bg-blue-500 text-white"
               }`}
             >
-              <div className="flex items-center">
+              <div className="flex items-center justify-center">
                 {toast.type === "success" ? (
-                  <div className="w-2 h-2 bg-white rounded-full mr-3"></div>
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full mr-2"></div>
+                ) : toast.type === "error" ? (
+                  <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                 ) : (
-                  <div className="w-2 h-2 bg-white rounded-full mr-3 animate-pulse"></div>
+                  <Loader className="w-3 h-3 sm:w-4 sm:h-4 mr-2 animate-spin" />
                 )}
-                <span className="font-medium">{toast.message}</span>
+                <span className="font-medium text-center">{toast.message}</span>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Call to action */}
-        <div className="mt-10 text-center">
+        {/* Call to action - Mobile optimized */}
+        <div className="mt-6 sm:mt-10 text-center">
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className={`inline-block px-8 py-4 rounded-2xl font-bold text-lg shadow-lg ${
+            className={`inline-block px-4 py-2.5 sm:px-8 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg shadow-md ${
               darkMode
                 ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-500 hover:to-pink-500"
                 : "bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-400 hover:to-pink-400"
@@ -1002,9 +1572,9 @@ const App = () => {
           </motion.div>
         </div>
 
-        {/* Footer */}
+        {/* Footer - Mobile optimized */}
         <footer
-          className={`mt-12 text-center py-6 ${
+          className={`mt-8 sm:mt-12 text-center py-4 text-xs sm:text-sm ${
             darkMode ? "text-gray-400" : "text-gray-500"
           }`}
         >
@@ -1012,7 +1582,7 @@ const App = () => {
             Chinese Language Learning Resource • Designed with ❤️ for Language
             Learners
           </p>
-          <p className="mt-1 text-sm">
+          <p className="mt-1">
             Toggle theme for optimal reading comfort • {totalPages} pages of
             phrases
           </p>
