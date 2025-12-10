@@ -95,6 +95,30 @@ export default function App() {
     }
   }, [history]);
 
+  // Flag indicating whether dark mode is active. When `isDark` is true
+  // a `dark` class will be applied to the <html> element via the
+  // useEffect hook below. Toggling this state allows switching themes.
+  const [isDark, setIsDark] = useState(false);
+
+  // Order modal state. When the user clicks "Pesan Sekarang" we
+  // assemble the current cart into a temporary object (`modalOrder`) and
+  // show a confirmation dialog. On confirmation the order is saved to
+  // history; on cancellation the cart remains untouched.
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalOrder, setModalOrder] = useState(null);
+
+  // Apply or remove the `dark` class on the <html> element whenever
+  // `isDark` changes. This works in tandem with Tailwind's `darkMode:
+  // 'class'` configuration to enable dark variants of styles.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDark) {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+  }, [isDark]);
+
   /**
    * Handle adding an item to the cart. When the user clicks the "Tambah"
    * button, we update the cart state by incrementing the quantity for
@@ -153,20 +177,16 @@ export default function App() {
    * the order to a backend server. Here we simply display an alert and
    * reset the cart.
    */
+  /**
+   * Open the order confirmation modal. This function assembles the current
+   * cart into a temporary order structure and prepares a human‑readable
+   * summary. If the cart is empty a warning alert is shown instead.
+   */
   const placeOrder = () => {
     if (Object.keys(cart).length === 0) {
       alert("Keranjang masih kosong. Silakan pilih menu terlebih dahulu.");
       return;
     }
-    const orderSummary = Object.entries(cart)
-      .map(([id, qty]) => {
-        const item = menuItems.find((i) => i.id === parseInt(id));
-        return `${item?.name} x${qty}`;
-      })
-      .join(", ");
-    // Build a structured order object to store in history. Each item in the
-    // order contains its id, name, quantity and price. A timestamp is
-    // included for reference.
     const itemsInOrder = Object.entries(cart).map(([id, qty]) => {
       const item = menuItems.find((i) => i.id === parseInt(id));
       return {
@@ -176,29 +196,50 @@ export default function App() {
         price: item?.price,
       };
     });
-    const newHistoryEntry = {
-      id: Date.now(),
+    const summaryString = itemsInOrder
+      .map((it) => `${it.name} x${it.qty}`)
+      .join(", ");
+    setModalOrder({
       items: itemsInOrder,
       total: computeTotal(),
+      summary: summaryString,
+    });
+    setIsModalOpen(true);
+  };
+
+  /**
+   * Confirm the order in the modal. A new history entry is created with
+   * the contents of `modalOrder`, the cart is cleared and the modal
+   * dismissed. This function is called when the user clicks the
+   * "Konfirmasi" button on the pop‑up.
+   */
+  const confirmOrder = () => {
+    if (!modalOrder) return;
+    const newHistoryEntry = {
+      id: Date.now(),
+      items: modalOrder.items,
+      total: modalOrder.total,
       timestamp: new Date().toLocaleString("id-ID"),
     };
-    // Append to history and persist via useEffect.
     setHistory((prev) => [...prev, newHistoryEntry]);
-    // Provide a simple confirmation to the user using an alert. In a real
-    // application this could be replaced with a nicer toast or modal.
-    alert(
-      `Pesanan Anda: ${orderSummary}\nTotal: Rp ${computeTotal().toLocaleString(
-        "id-ID"
-      )}`
-    );
-    // Reset the cart after placing the order.
     setCart({});
+    setIsModalOpen(false);
+    setModalOrder(null);
+  };
+
+  /**
+   * Close the order modal without placing the order. This leaves the cart
+   * unchanged.
+   */
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalOrder(null);
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#f8f1e5] dark:bg-[#1c1a18] text-gray-800 dark:text-gray-200">
       {/* Header */}
-      <header className="bg-gradient-to-r from-green-600 via-green-500 to-green-700 text-white shadow sticky top-0 z-10">
+      <header className="bg-gradient-to-r from-[#603813] via-[#b29f7e] to-[#603813] dark:from-[#2e1c0f] dark:via-[#4f3422] dark:to-[#2e1c0f] text-white shadow sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Kafe Kopi</h1>
@@ -209,6 +250,14 @@ export default function App() {
           <span className="mt-4 sm:mt-0 text-xs">
             {new Date().toLocaleDateString("id-ID")}
           </span>
+          {/* Theme toggle button */}
+          <button
+            className="ml-0 sm:ml-4 mt-4 sm:mt-0 border border-white/40 text-white rounded px-3 py-1 text-sm hover:bg-white/20 transition"
+            onClick={() => setIsDark((prev) => !prev)}
+            title="Toggle Tema"
+          >
+            {isDark ? "Tema Terang" : "Tema Gelap"}
+          </button>
         </div>
       </header>
 
@@ -219,7 +268,7 @@ export default function App() {
           {menuItems.map((item) => (
             <div
               key={item.id}
-              className="border rounded-lg overflow-hidden shadow hover:shadow-md transition-shadow bg-white flex flex-col"
+              className="rounded-lg overflow-hidden shadow hover:shadow-md transition-shadow bg-white dark:bg-[#2b2119] flex flex-col"
             >
               {/* Image */}
               <img
@@ -228,13 +277,13 @@ export default function App() {
                 className="h-40 w-full object-cover"
               />
               <div className="p-5 flex flex-col flex-1">
-                <h2 className="text-lg font-semibold mb-1 text-gray-800">
+                <h2 className="text-lg font-semibold mb-1 text-gray-800 dark:text-gray-200">
                   {item.name}
                 </h2>
-                <p className="text-sm text-gray-600 mb-2 flex-1">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 flex-1">
                   {item.description}
                 </p>
-                <p className="text-base font-medium text-green-700 mb-4">
+                <p className="text-base font-medium text-green-700 dark:text-green-400 mb-4">
                   Rp {item.price.toLocaleString("id-ID")}
                 </p>
                 <button
@@ -254,24 +303,26 @@ export default function App() {
           {Object.keys(cart).length === 0 ? (
             <p className="text-gray-600">Belum ada item yang ditambahkan.</p>
           ) : (
-            <div className="space-y-3 bg-white p-4 rounded-lg shadow">
+            <div className="space-y-3 bg-white dark:bg-[#2b2119] p-4 rounded-lg shadow">
               {Object.entries(cart).map(([id, qty]) => {
                 const item = menuItems.find((i) => i.id === parseInt(id));
                 if (!item) return null;
                 return (
                   <div
                     key={id}
-                    className="flex items-center justify-between border-b pb-2 last:border-b-0 last:pb-0"
+                    className="flex items-center justify-between border-b pb-2 last:border-b-0 last:pb-0 border-gray-200 dark:border-gray-700"
                   >
                     <div>
-                      <p className="font-medium text-gray-800">{item.name}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="font-medium text-gray-800 dark:text-gray-200">
+                        {item.name}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {qty} x Rp {item.price.toLocaleString("id-ID")}
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
                       <button
-                        className="border border-gray-300 rounded px-3 py-1 text-sm text-gray-700 hover:bg-gray-100"
+                        className="border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={() => decrementItem(item.id)}
                       >
                         -
@@ -280,7 +331,7 @@ export default function App() {
                         {qty}
                       </span>
                       <button
-                        className="border border-gray-300 rounded px-3 py-1 text-sm text-gray-700 hover:bg-gray-100"
+                        className="border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={() => addToCart(item.id)}
                       >
                         +
@@ -289,7 +340,7 @@ export default function App() {
                   </div>
                 );
               })}
-              <div className="flex justify-between font-semibold border-t pt-3">
+              <div className="flex justify-between font-semibold border-t pt-3 border-gray-200 dark:border-gray-700">
                 <span>Total</span>
                 <span>Rp {computeTotal().toLocaleString("id-ID")}</span>
               </div>
@@ -311,7 +362,10 @@ export default function App() {
           ) : (
             <div className="space-y-4">
               {history.map((order) => (
-                <div key={order.id} className="bg-white p-4 rounded-lg shadow">
+                <div
+                  key={order.id}
+                  className="bg-white dark:bg-[#2b2119] p-4 rounded-lg shadow"
+                >
                   <p className="text-sm text-gray-500">{order.timestamp}</p>
                   <ul className="mt-2 space-y-1 text-sm">
                     {order.items.map((itm) => (
@@ -337,10 +391,52 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-100 py-4 mt-auto text-center text-sm text-gray-500">
+      <footer className="bg-gray-100 dark:bg-[#2e1c0f] py-4 mt-auto text-center text-sm text-gray-500 dark:text-gray-400">
         © {new Date().getFullYear()} Kafe Kopi. Dibuat dengan React & Tailwind
         CSS.
       </footer>
+
+      {/* Order Confirmation Modal */}
+      {isModalOpen && modalOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70">
+          <div className="bg-white dark:bg-[#2b2119] rounded-lg p-6 w-11/12 max-w-md mx-auto shadow-lg text-gray-800 dark:text-gray-200">
+            <h3 className="text-lg font-semibold mb-2">Konfirmasi Pesanan</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+              Anda memesan:
+            </p>
+            <ul className="space-y-1 text-sm mb-3">
+              {modalOrder.items.map((itm) => (
+                <li key={itm.id} className="flex justify-between">
+                  <span>
+                    {itm.name} x{itm.qty}
+                  </span>
+                  <span>
+                    Rp {(itm.price * itm.qty).toLocaleString("id-ID")}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="flex justify-between font-semibold border-t border-gray-200 dark:border-gray-700 pt-2 mb-4 text-sm">
+              <span>Total</span>
+              <span>Rp {modalOrder.total.toLocaleString("id-ID")}</span>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button
+                className="px-4 py-2 rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={closeModal}
+              >
+                Batal
+              </button>
+              <button
+                className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={confirmOrder}
+              >
+                Konfirmasi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
