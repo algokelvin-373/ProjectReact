@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from "react";
 
 // Define a list of menu items for the café. Each item has an id, name,
 // description, and price. In a real application this data might come
@@ -6,38 +6,38 @@ import React, { useState } from 'react';
 const menuItems = [
   {
     id: 1,
-    name: 'Latte',
-    description: 'Kopi espresso dengan susu steam dan sedikit busa.',
+    name: "Latte",
+    description: "Kopi espresso dengan susu steam dan sedikit busa.",
     price: 35000,
   },
   {
     id: 2,
-    name: 'Cappuccino',
-    description: 'Perpaduan espresso, susu panas, dan busa tebal.',
+    name: "Cappuccino",
+    description: "Perpaduan espresso, susu panas, dan busa tebal.",
     price: 33000,
   },
   {
     id: 3,
-    name: 'Espresso',
-    description: 'Shot kopi pekat yang diseduh dengan tekanan tinggi.',
+    name: "Espresso",
+    description: "Shot kopi pekat yang diseduh dengan tekanan tinggi.",
     price: 28000,
   },
   {
     id: 4,
-    name: 'Americano',
-    description: 'Espresso yang diencerkan dengan air panas.',
+    name: "Americano",
+    description: "Espresso yang diencerkan dengan air panas.",
     price: 30000,
   },
   {
     id: 5,
-    name: 'Mocha',
-    description: 'Kombinasi espresso, cokelat, dan susu steamed.',
+    name: "Mocha",
+    description: "Kombinasi espresso, cokelat, dan susu steamed.",
     price: 38000,
   },
   {
     id: 6,
-    name: 'Macchiato',
-    description: 'Espresso dengan sedikit busa susu di atasnya.',
+    name: "Macchiato",
+    description: "Espresso dengan sedikit busa susu di atasnya.",
     price: 32000,
   },
 ];
@@ -112,7 +112,7 @@ export default function App() {
    */
   const placeOrder = () => {
     if (Object.keys(cart).length === 0) {
-      alert('Keranjang masih kosong. Silakan pilih menu terlebih dahulu.');
+      alert("Keranjang masih kosong. Silakan pilih menu terlebih dahulu.");
       return;
     }
     const orderSummary = Object.entries(cart)
@@ -120,8 +120,12 @@ export default function App() {
         const item = menuItems.find((i) => i.id === parseInt(id));
         return `${item?.name} x${qty}`;
       })
-      .join(', ');
-    alert(`Pesanan Anda: ${orderSummary}\nTotal: Rp ${computeTotal().toLocaleString('id-ID')}`);
+      .join(", ");
+    alert(
+      `Pesanan Anda: ${orderSummary}\nTotal: Rp ${computeTotal().toLocaleString(
+        "id-ID"
+      )}`
+    );
     setCart({});
   };
 
@@ -131,7 +135,9 @@ export default function App() {
       <header className="bg-white shadow sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-6 flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Menu Kafe</h1>
-          <p className="text-sm text-gray-500">Pilih kopi favoritmu dan pesan sekarang!</p>
+          <p className="text-sm text-gray-500">
+            Pilih kopi favoritmu dan pesan sekarang!
+          </p>
         </div>
       </header>
 
@@ -147,7 +153,9 @@ export default function App() {
               <div className="mb-4">
                 <h2 className="text-xl font-semibold mb-1">{item.name}</h2>
                 <p className="text-sm text-gray-600 mb-2">{item.description}</p>
-                <p className="text-lg font-medium text-green-700">Rp {item.price.toLocaleString('id-ID')}</p>
+                <p className="text-lg font-medium text-green-700">
+                  Rp {item.price.toLocaleString("id-ID")}
+                </p>
               </div>
               <button
                 className="mt-auto bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
@@ -177,7 +185,7 @@ export default function App() {
                     <div>
                       <p className="font-medium">{item.name}</p>
                       <p className="text-sm text-gray-500">
-                        {qty} x Rp {item.price.toLocaleString('id-ID')}
+                        {qty} x Rp {item.price.toLocaleString("id-ID")}
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -200,7 +208,7 @@ export default function App() {
               })}
               <div className="flex justify-between font-semibold border-t pt-2">
                 <span>Total</span>
-                <span>Rp {computeTotal().toLocaleString('id-ID')}</span>
+                <span>Rp {computeTotal().toLocaleString("id-ID")}</span>
               </div>
               <button
                 className="w-full bg-blue-600 text-white py-2 rounded mt-4 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -215,7 +223,8 @@ export default function App() {
 
       {/* Footer */}
       <footer className="bg-gray-100 py-4 mt-auto text-center text-sm text-gray-500">
-        © {new Date().getFullYear()} Kafe Kopi. Dibuat dengan React & Tailwind CSS.
+        © {new Date().getFullYear()} Kafe Kopi. Dibuat dengan React & Tailwind
+        CSS.
       </footer>
     </div>
   );
