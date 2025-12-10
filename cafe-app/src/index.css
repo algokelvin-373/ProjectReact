@@ -2,36 +2,4 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Theme variables and utilities for light/dark support */
-:root[data-theme="light"] {
-	--bg: #f7fafc; /* gray-100 */
-	--card: #ffffff; /* white */
-	--header: rgba(255,255,255,0.7);
-	--text-primary: #0f172a; /* slate-900 */
-	--text-muted: #475569; /* slate-500 */
-	--accent: #6366f1; /* indigo-500 */
-	--accent-2: #8b5cf6;
-}
-
-:root[data-theme="dark"] {
-	--bg: #0b1220; /* deep */
-	--card: #0f1724; /* slightly lighter */
-	--header: rgba(15,23,36,0.4);
-	--text-primary: #e6eef8;
-	--text-muted: #9aa7b8;
-	--accent: #7c3aed; /* violet-600 */
-	--accent-2: #6d28d9;
-}
-
-/* Utility helpers that map to CSS variables */
-.app-bg { background-color: var(--bg); }
-.card-bg { background-color: var(--card); }
-.header-bg { background-color: var(--header); }
-.text-primary { color: var(--text-primary); }
-.text-muted { color: var(--text-muted); }
-.accent-text { color: var(--accent); }
-.accent-gradient { background: linear-gradient(90deg,var(--accent),var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-
-/* Small visual niceties */
-.transition-colors { transition: color .2s, background-color .2s, border-color .2s; }
-
+/* Custom styles can be added here if necessary. */
