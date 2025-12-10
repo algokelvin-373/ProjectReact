@@ -107,6 +107,19 @@ export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalOrder, setModalOrder] = useState(null);
 
+  // Success modal state. When an order is confirmed this flag becomes
+  // true and a brief success message is shown. The success modal
+  // displays the details of the newly saved transaction and can be
+  // dismissed with a button.
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const [successOrder, setSuccessOrder] = useState(null);
+
+  // History detail modal state. When a transaction in the history list
+  // is clicked the selected order is stored here and a modal is opened
+  // to display its details.
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [historyOrder, setHistoryOrder] = useState(null);
+
   // Apply or remove the `dark` class on the <html> element whenever
   // `isDark` changes. This works in tandem with Tailwind's `darkMode:
   // 'class'` configuration to enable dark variants of styles.
@@ -225,6 +238,11 @@ export default function App() {
     setCart({});
     setIsModalOpen(false);
     setModalOrder(null);
+
+    // Show a success dialog with the new order's details. This allows
+    // users to see a receipt-like confirmation after placing an order.
+    setSuccessOrder(newHistoryEntry);
+    setIsSuccessOpen(true);
   };
 
   /**
@@ -234,6 +252,35 @@ export default function App() {
   const closeModal = () => {
     setIsModalOpen(false);
     setModalOrder(null);
+  };
+
+  /**
+   * Close the success confirmation modal. This resets the success
+   * message and allows the user to continue using the app normally.
+   */
+  const closeSuccess = () => {
+    setIsSuccessOpen(false);
+    setSuccessOrder(null);
+  };
+
+  /**
+   * Open a modal showing details of a historical transaction. The order
+   * object passed in is stored in state so it can be rendered inside
+   * the modal.
+   *
+   * @param {object} order - The transaction from the history list to display.
+   */
+  const openHistoryModal = (order) => {
+    setHistoryOrder(order);
+    setIsHistoryModalOpen(true);
+  };
+
+  /**
+   * Close the history detail modal.
+   */
+  const closeHistoryModal = () => {
+    setIsHistoryModalOpen(false);
+    setHistoryOrder(null);
   };
 
   return (
@@ -301,7 +348,9 @@ export default function App() {
         <section className="mt-12">
           <h2 className="text-2xl font-semibold mb-4">Ringkasan Pesanan</h2>
           {Object.keys(cart).length === 0 ? (
-            <p className="text-gray-600">Belum ada item yang ditambahkan.</p>
+            <p className="text-gray-600 dark:text-gray-400">
+              Belum ada item yang ditambahkan.
+            </p>
           ) : (
             <div className="space-y-3 bg-white dark:bg-[#2b2119] p-4 rounded-lg shadow">
               {Object.entries(cart).map(([id, qty]) => {
@@ -358,7 +407,9 @@ export default function App() {
         <section className="mt-12">
           <h2 className="text-2xl font-semibold mb-4">Riwayat Transaksi</h2>
           {history.length === 0 ? (
-            <p className="text-gray-600">Belum ada transaksi.</p>
+            <p className="text-gray-600 dark:text-gray-400">
+              Belum ada transaksi.
+            </p>
           ) : (
             <div className="space-y-4">
               {history.map((order) => (
@@ -366,7 +417,9 @@ export default function App() {
                   key={order.id}
                   className="bg-white dark:bg-[#2b2119] p-4 rounded-lg shadow"
                 >
-                  <p className="text-sm text-gray-500">{order.timestamp}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {order.timestamp}
+                  </p>
                   <ul className="mt-2 space-y-1 text-sm">
                     {order.items.map((itm) => (
                       <li key={itm.id} className="flex justify-between">
@@ -382,6 +435,14 @@ export default function App() {
                   <div className="flex justify-between font-semibold border-t pt-2 mt-2 text-sm">
                     <span>Total</span>
                     <span>Rp {order.total.toLocaleString("id-ID")}</span>
+                  </div>
+                  <div className="mt-3 flex justify-end">
+                    <button
+                      className="text-sm text-blue-600 dark:text-blue-400 underline hover:opacity-80"
+                      onClick={() => openHistoryModal(order)}
+                    >
+                      Lihat Detail
+                    </button>
                   </div>
                 </div>
               ))}
@@ -432,6 +493,76 @@ export default function App() {
                 onClick={confirmOrder}
               >
                 Konfirmasi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Confirmation Modal */}
+      {isSuccessOpen && successOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70">
+          <div className="bg-white dark:bg-[#2b2119] rounded-lg p-6 w-11/12 max-w-md mx-auto shadow-lg text-gray-800 dark:text-gray-200">
+            <h3 className="text-lg font-semibold mb-2">Pesanan Berhasil</h3>
+            <p className="text-sm mb-3">
+              Pesanan Anda telah diterima pada {successOrder.timestamp}.
+            </p>
+            <ul className="space-y-1 text-sm mb-3">
+              {successOrder.items.map((itm) => (
+                <li key={itm.id} className="flex justify-between">
+                  <span>
+                    {itm.name} x{itm.qty}
+                  </span>
+                  <span>
+                    Rp {(itm.price * itm.qty).toLocaleString("id-ID")}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="flex justify-between font-semibold border-t border-gray-200 dark:border-gray-700 pt-2 mb-4 text-sm">
+              <span>Total</span>
+              <span>Rp {successOrder.total.toLocaleString("id-ID")}</span>
+            </div>
+            <div className="flex justify-end">
+              <button
+                className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white"
+                onClick={closeSuccess}
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* History Detail Modal */}
+      {isHistoryModalOpen && historyOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70">
+          <div className="bg-white dark:bg-[#2b2119] rounded-lg p-6 w-11/12 max-w-md mx-auto shadow-lg text-gray-800 dark:text-gray-200">
+            <h3 className="text-lg font-semibold mb-2">Detail Transaksi</h3>
+            <p className="text-sm mb-3">Waktu: {historyOrder.timestamp}</p>
+            <ul className="space-y-1 text-sm mb-3">
+              {historyOrder.items.map((itm) => (
+                <li key={itm.id} className="flex justify-between">
+                  <span>
+                    {itm.name} x{itm.qty}
+                  </span>
+                  <span>
+                    Rp {(itm.price * itm.qty).toLocaleString("id-ID")}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="flex justify-between font-semibold border-t border-gray-200 dark:border-gray-700 pt-2 mb-4 text-sm">
+              <span>Total</span>
+              <span>Rp {historyOrder.total.toLocaleString("id-ID")}</span>
+            </div>
+            <div className="flex justify-end">
+              <button
+                className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={closeHistoryModal}
+              >
+                Tutup
               </button>
             </div>
           </div>
