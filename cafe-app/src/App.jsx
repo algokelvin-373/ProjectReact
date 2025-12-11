@@ -1,79 +1,59 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
-// Import images for each menu item. These photos come from
-// Wikimedia Commons and are saved locally in the assets folder. If
-// additional menu items are added in the future you can drop more
-// pictures into `src/assets` and import them here.
+// Import locally stored coffee images for some products. These files reside
+// in the `src/assets` directory. We fall back to coloured placeholder
+// images for menu items that don't have a corresponding photo.
 import latteImg from "./assets/latte.jpg";
 import cappuccinoImg from "./assets/cappuccino.jpg";
 import espressoImg from "./assets/espresso.jpg";
 
-// Define a list of menu items for the café. Each item has an id, name,
-// description, and price. In a real application this data might come
-// from a database or API, but for this demo it's defined inline.
-const menuItems = [
-  {
-    id: 1,
-    name: "Latte",
-    description: "Kopi espresso dengan susu steam dan sedikit busa.",
-    price: 35000,
-    image: latteImg,
-  },
-  {
-    id: 2,
-    name: "Cappuccino",
-    description: "Perpaduan espresso, susu panas, dan busa tebal.",
-    price: 33000,
-    image: cappuccinoImg,
-  },
-  {
-    id: 3,
-    name: "Espresso",
-    description: "Shot kopi pekat yang diseduh dengan tekanan tinggi.",
-    price: 28000,
-    image: espressoImg,
-  },
+/**
+ * The product catalogue for the café. Each entry includes an id, name,
+ * price and image URL. The first three drinks are mapped to locally
+ * downloaded images while the remainder use placeholder graphics.
+ */
+const coffeeProducts = [
+  { id: 1, name: "Espresso", price: 25000, image: espressoImg },
+  { id: 2, name: "Cappuccino", price: 30000, image: cappuccinoImg },
+  { id: 3, name: "Latte", price: 32000, image: latteImg },
   {
     id: 4,
-    name: "Americano",
-    description: "Espresso yang diencerkan dengan air panas.",
-    price: 30000,
-    // Reuse the espresso image for Americano because both drinks share a similar look.
-    image: espressoImg,
+    name: "Mocha",
+    price: 35000,
+    image: "https://placehold.co/300x200/654321/FFFFFF?text=Mocha",
   },
   {
     id: 5,
-    name: "Mocha",
-    description: "Kombinasi espresso, cokelat, dan susu steamed.",
-    price: 38000,
-    // Use the latte image as a placeholder for Mocha.
-    image: latteImg,
+    name: "Americano",
+    price: 28000,
+    image: "https://placehold.co/300x200/8B4513/FFFFFF?text=Americano",
   },
   {
     id: 6,
-    name: "Macchiato",
-    description: "Espresso dengan sedikit busa susu di atasnya.",
-    price: 32000,
-    // Use the cappuccino image as a placeholder for Macchiato.
-    image: cappuccinoImg,
+    name: "Flat White",
+    price: 33000,
+    image: "https://placehold.co/300x200/D2691E/FFFFFF?text=Flat+White",
   },
 ];
 
 /**
- * The main application component. It renders a list of menu items and allows
- * users to add them to an order. A summary of the current order is shown
- * below the menu. State is kept locally in the component using React hooks.
+ * Main application component. It maintains the current navigation tab,
+ * shopping cart, transaction history, dark mode, responsive mobile menu and
+ * various modals for order confirmation, success feedback and viewing past
+ * transactions. The UI is split into three primary views: home, menu and
+ * cart, with a mobile‑friendly navigation bar.
  */
 export default function App() {
-  // cart stores a mapping of menu item IDs to quantities. An empty object means
-  // nothing has been ordered yet.
-  const [cart, setCart] = useState({});
+  // Which section is currently active: 'home', 'menu' or 'cart'.
+  const [activeTab, setActiveTab] = useState("home");
 
-  // history stores an array of past orders. Each entry contains a unique
-  // identifier, a timestamp, the items ordered, and the total price. It is
-  // initialised from localStorage so that transaction history persists
-  // across page reloads. The optional initialiser function passed to
-  // useState reads from localStorage once on mount.
+  // Items currently in the cart. Each entry has id, name, price, image and quantity.
+  const [cart, setCart] = useState([]);
+
+  // Flag to control visibility of the mobile navigation menu.
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Persisted transaction history. Each entry includes id, timestamp, items and total.
   const [history, setHistory] = useState(() => {
     try {
       const saved = localStorage.getItem("history");
@@ -84,9 +64,34 @@ export default function App() {
     }
   });
 
-  // Persist history to localStorage whenever it changes. Without this
-  // effect the history would be lost if the page were refreshed. Wrap in
-  // try/catch to avoid breaking the UI if storage is unavailable.
+  // Flag controlling whether dark mode is enabled. When true a 'dark'
+  // class is applied to the <html> element via the effect below.
+  const [isDark, setIsDark] = useState(false);
+
+  // Order confirmation modal state. When open this holds the items being ordered.
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalOrder, setModalOrder] = useState(null);
+
+  // Success modal state for displaying a receipt after an order is placed.
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const [successOrder, setSuccessOrder] = useState(null);
+
+  // History detail modal state. Stores the transaction selected for inspection.
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [historyOrder, setHistoryOrder] = useState(null);
+
+  // Close the mobile menu on large screens.
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsMenuOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Persist the transaction history to localStorage whenever it changes.
   useEffect(() => {
     try {
       localStorage.setItem("history", JSON.stringify(history));
@@ -95,34 +100,7 @@ export default function App() {
     }
   }, [history]);
 
-  // Flag indicating whether dark mode is active. When `isDark` is true
-  // a `dark` class will be applied to the <html> element via the
-  // useEffect hook below. Toggling this state allows switching themes.
-  const [isDark, setIsDark] = useState(false);
-
-  // Order modal state. When the user clicks "Pesan Sekarang" we
-  // assemble the current cart into a temporary object (`modalOrder`) and
-  // show a confirmation dialog. On confirmation the order is saved to
-  // history; on cancellation the cart remains untouched.
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalOrder, setModalOrder] = useState(null);
-
-  // Success modal state. When an order is confirmed this flag becomes
-  // true and a brief success message is shown. The success modal
-  // displays the details of the newly saved transaction and can be
-  // dismissed with a button.
-  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
-  const [successOrder, setSuccessOrder] = useState(null);
-
-  // History detail modal state. When a transaction in the history list
-  // is clicked the selected order is stored here and a modal is opened
-  // to display its details.
-  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
-  const [historyOrder, setHistoryOrder] = useState(null);
-
-  // Apply or remove the `dark` class on the <html> element whenever
-  // `isDark` changes. This works in tandem with Tailwind's `darkMode:
-  // 'class'` configuration to enable dark variants of styles.
+  // Apply the dark mode class to <html> whenever the isDark flag changes.
   useEffect(() => {
     const root = document.documentElement;
     if (isDark) {
@@ -133,328 +111,526 @@ export default function App() {
   }, [isDark]);
 
   /**
-   * Handle adding an item to the cart. When the user clicks the "Tambah"
-   * button, we update the cart state by incrementing the quantity for
-   * the given id. If the item is not yet in the cart we add it with quantity 1.
+   * Add a product to the cart. If it already exists increment its quantity,
+   * otherwise push a new item with quantity 1.
    *
-   * @param {number} id - The identifier of the menu item to add.
+   * @param {object} product - The product to add to the cart.
    */
-  const addToCart = (id) => {
-    setCart((prev) => {
-      const quantity = prev[id] || 0;
-      return {
-        ...prev,
-        [id]: quantity + 1,
-      };
+  const addToCart = (product) => {
+    setCart((prevCart) => {
+      const existing = prevCart.find((item) => item.id === product.id);
+      if (existing) {
+        return prevCart.map((item) =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      return [...prevCart, { ...product, quantity: 1 }];
     });
   };
 
   /**
-   * Decrement the quantity for a given item in the cart. If the quantity
-   * reaches zero, the item is removed from the cart entirely. This handler
-   * is used for the "-" button in the order summary.
+   * Increment the quantity of a cart item by id.
    *
-   * @param {number} id - The identifier of the item whose quantity should be decremented.
+   * @param {number} id - The identifier of the cart item to increment.
+   */
+  const incrementItem = (id) => {
+    setCart((prevCart) =>
+      prevCart.map((item) =>
+        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
+      )
+    );
+  };
+
+  /**
+   * Decrement the quantity of a cart item by id. If quantity reaches zero
+   * the item is removed entirely.
+   *
+   * @param {number} id - The identifier of the cart item to decrement.
    */
   const decrementItem = (id) => {
-    setCart((prev) => {
-      const quantity = prev[id] || 0;
-      if (quantity <= 1) {
-        // Remove item from cart when quantity hits zero
-        const { [id]: _, ...rest } = prev;
-        return rest;
-      }
-      return {
-        ...prev,
-        [id]: quantity - 1,
-      };
-    });
+    setCart((prevCart) =>
+      prevCart
+        .map((item) =>
+          item.id === id ? { ...item, quantity: item.quantity - 1 } : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
   };
 
   /**
-   * Compute the total cost of the items in the cart by summing
-   * (quantity * price) for each item. If the cart is empty,
-   * the total will be zero.
+   * Remove an item from the cart entirely.
    *
-   * @returns {number} the total price of all items in the cart
+   * @param {number} id - The identifier of the item to remove.
    */
-  const computeTotal = () => {
-    return Object.entries(cart).reduce((sum, [id, qty]) => {
-      const item = menuItems.find((i) => i.id === parseInt(id));
-      return sum + (item?.price || 0) * qty;
-    }, 0);
+  const removeFromCart = (id) => {
+    setCart((prevCart) => prevCart.filter((item) => item.id !== id));
   };
 
   /**
-   * Handler for placing an order. In a real application this would send
-   * the order to a backend server. Here we simply display an alert and
-   * reset the cart.
+   * Compute the total price of the current cart.
+   *
+   * @returns {number} The sum of price × quantity for each cart item.
    */
+  const getTotalPrice = () => {
+    return cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  };
+
+  /** Toggle the mobile navigation menu. */
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  /** Toggle dark mode. */
+  const toggleTheme = () => setIsDark((prev) => !prev);
+
   /**
-   * Open the order confirmation modal. This function assembles the current
-   * cart into a temporary order structure and prepares a human‑readable
-   * summary. If the cart is empty a warning alert is shown instead.
+   * Assemble an order from the cart and open the confirmation modal.
+   * If the cart is empty a warning alert is shown instead.
    */
   const placeOrder = () => {
-    if (Object.keys(cart).length === 0) {
-      alert("Keranjang masih kosong. Silakan pilih menu terlebih dahulu.");
+    if (cart.length === 0) {
+      alert("Keranjang masih kosong. Silakan pilih produk terlebih dahulu.");
       return;
     }
-    const itemsInOrder = Object.entries(cart).map(([id, qty]) => {
-      const item = menuItems.find((i) => i.id === parseInt(id));
-      return {
-        id: item?.id,
-        name: item?.name,
-        qty,
-        price: item?.price,
-      };
-    });
-    const summaryString = itemsInOrder
-      .map((it) => `${it.name} x${it.qty}`)
-      .join(", ");
     setModalOrder({
-      items: itemsInOrder,
-      total: computeTotal(),
-      summary: summaryString,
+      items: cart.map(({ id, name, price, quantity }) => ({
+        id,
+        name,
+        price,
+        qty: quantity,
+      })),
+      total: getTotalPrice(),
     });
     setIsModalOpen(true);
   };
 
-  /**
-   * Confirm the order in the modal. A new history entry is created with
-   * the contents of `modalOrder`, the cart is cleared and the modal
-   * dismissed. This function is called when the user clicks the
-   * "Konfirmasi" button on the pop‑up.
-   */
+  /** Confirm the order, append it to history, clear the cart and show success. */
   const confirmOrder = () => {
     if (!modalOrder) return;
-    const newHistoryEntry = {
+    const newEntry = {
       id: Date.now(),
       items: modalOrder.items,
       total: modalOrder.total,
       timestamp: new Date().toLocaleString("id-ID"),
     };
-    setHistory((prev) => [...prev, newHistoryEntry]);
-    setCart({});
+    setHistory((prev) => [...prev, newEntry]);
+    setCart([]);
     setIsModalOpen(false);
     setModalOrder(null);
-
-    // Show a success dialog with the new order's details. This allows
-    // users to see a receipt-like confirmation after placing an order.
-    setSuccessOrder(newHistoryEntry);
+    setSuccessOrder(newEntry);
     setIsSuccessOpen(true);
+    setActiveTab("cart");
   };
 
-  /**
-   * Close the order modal without placing the order. This leaves the cart
-   * unchanged.
-   */
+  /** Close the confirmation modal without placing an order. */
   const closeModal = () => {
     setIsModalOpen(false);
     setModalOrder(null);
   };
 
-  /**
-   * Close the success confirmation modal. This resets the success
-   * message and allows the user to continue using the app normally.
-   */
+  /** Close the success modal. */
   const closeSuccess = () => {
     setIsSuccessOpen(false);
     setSuccessOrder(null);
   };
 
-  /**
-   * Open a modal showing details of a historical transaction. The order
-   * object passed in is stored in state so it can be rendered inside
-   * the modal.
-   *
-   * @param {object} order - The transaction from the history list to display.
-   */
+  /** Open a modal displaying details of a past transaction. */
   const openHistoryModal = (order) => {
     setHistoryOrder(order);
     setIsHistoryModalOpen(true);
   };
 
-  /**
-   * Close the history detail modal.
-   */
+  /** Close the history detail modal. */
   const closeHistoryModal = () => {
-    setIsHistoryModalOpen(false);
     setHistoryOrder(null);
+    setIsHistoryModalOpen(false);
   };
 
-  return (
-    <div className="min-h-screen flex flex-col bg-[#f8f1e5] dark:bg-[#1c1a18] text-gray-800 dark:text-gray-200">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-[#603813] via-[#b29f7e] to-[#603813] dark:from-[#2e1c0f] dark:via-[#4f3422] dark:to-[#2e1c0f] text-white shadow sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Kafe Kopi</h1>
-            <p className="text-sm opacity-90">
-              Pilih kopi favoritmu dan pesan sekarang!
+  /**
+   * Render the home tab, which includes a hero section, featured products and
+   * an about section. Dark mode classes are applied where appropriate.
+   */
+  const renderHome = () => (
+    <div className="space-y-12">
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 dark:from-[#2e1c0f] dark:via-[#4f3422] dark:to-[#2e1c0f] rounded-3xl overflow-hidden shadow-2xl">
+        <div className="absolute inset-0 bg-black opacity-20"></div>
+        <div className="relative z-10 px-6 py-16 md:px-12 md:py-24">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight">
+              Crafted with Passion, Brewed to Perfection
+            </h1>
+            <p className="text-xl md:text-2xl text-amber-100 mb-8 leading-relaxed">
+              Experience the rich aroma and bold flavors of our premium coffee
+              selection
             </p>
-          </div>
-          <span className="mt-4 sm:mt-0 text-xs">
-            {new Date().toLocaleDateString("id-ID")}
-          </span>
-          {/* Theme toggle button */}
-          <button
-            className="ml-0 sm:ml-4 mt-4 sm:mt-0 border border-white/40 text-white rounded px-3 py-1 text-sm hover:bg-white/20 transition"
-            onClick={() => setIsDark((prev) => !prev)}
-            title="Toggle Tema"
-          >
-            {isDark ? "Tema Terang" : "Tema Gelap"}
-          </button>
-        </div>
-      </header>
-
-      {/* Main content area */}
-      <main className="flex-1 py-8 px-4 max-w-5xl mx-auto w-full">
-        {/* Menu grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {menuItems.map((item) => (
-            <div
-              key={item.id}
-              className="rounded-lg overflow-hidden shadow hover:shadow-md transition-shadow bg-white dark:bg-[#2b2119] flex flex-col"
+            <button
+              onClick={() => setActiveTab("menu")}
+              className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
-              {/* Image */}
+              Explore Our Menu
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Products */}
+      <section>
+        <h2 className="text-3xl font-bold text-amber-900 dark:text-amber-200 mb-8 text-center">
+          Our Signature Blends
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {coffeeProducts.slice(0, 3).map((product) => (
+            <div
+              key={product.id}
+              className="bg-white dark:bg-[#2b2119] rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+            >
               <img
-                src={item.image}
-                alt={item.name}
-                className="h-40 w-full object-cover"
+                src={product.image}
+                alt={product.name}
+                className="w-full h-48 object-cover"
               />
-              <div className="p-5 flex flex-col flex-1">
-                <h2 className="text-lg font-semibold mb-1 text-gray-800 dark:text-gray-200">
-                  {item.name}
-                </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 flex-1">
-                  {item.description}
-                </p>
-                <p className="text-base font-medium text-green-700 dark:text-green-400 mb-4">
-                  Rp {item.price.toLocaleString("id-ID")}
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-amber-900 dark:text-amber-200 mb-2">
+                  {product.name}
+                </h3>
+                <p className="text-amber-700 dark:text-amber-300 mb-4">
+                  Rp {product.price.toLocaleString()}
                 </p>
                 <button
-                  className="mt-auto bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
-                  onClick={() => addToCart(item.id)}
+                  onClick={() => addToCart(product)}
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-white py-2 px-4 rounded-lg transition-colors duration-300"
                 >
-                  Tambah
+                  Add to Cart
                 </button>
               </div>
             </div>
           ))}
         </div>
+      </section>
 
-        {/* Order summary */}
-        <section className="mt-12">
-          <h2 className="text-2xl font-semibold mb-4">Ringkasan Pesanan</h2>
-          {Object.keys(cart).length === 0 ? (
-            <p className="text-gray-600 dark:text-gray-400">
-              Belum ada item yang ditambahkan.
-            </p>
-          ) : (
-            <div className="space-y-3 bg-white dark:bg-[#2b2119] p-4 rounded-lg shadow">
-              {Object.entries(cart).map(([id, qty]) => {
-                const item = menuItems.find((i) => i.id === parseInt(id));
-                if (!item) return null;
-                return (
-                  <div
-                    key={id}
-                    className="flex items-center justify-between border-b pb-2 last:border-b-0 last:pb-0 border-gray-200 dark:border-gray-700"
-                  >
-                    <div>
-                      <p className="font-medium text-gray-800 dark:text-gray-200">
-                        {item.name}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {qty} x Rp {item.price.toLocaleString("id-ID")}
-                      </p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <button
-                        className="border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        onClick={() => decrementItem(item.id)}
-                      >
-                        -
-                      </button>
-                      <span className="min-w-[24px] text-center font-medium">
-                        {qty}
-                      </span>
-                      <button
-                        className="border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        onClick={() => addToCart(item.id)}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-              <div className="flex justify-between font-semibold border-t pt-3 border-gray-200 dark:border-gray-700">
-                <span>Total</span>
-                <span>Rp {computeTotal().toLocaleString("id-ID")}</span>
+      {/* About Section */}
+      <section className="bg-amber-50 dark:bg-[#3b2a1d] rounded-3xl p-8 md:p-12">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-amber-900 dark:text-amber-200 mb-6 text-center">
+            Our Coffee Journey
+          </h2>
+          <p className="text-amber-800 dark:text-amber-300 text-lg leading-relaxed text-center">
+            Since 2010, we've been dedicated to sourcing the finest coffee beans
+            from around the world. Our master roasters craft each batch with
+            precision and care, ensuring every cup delivers an exceptional
+            experience that awakens your senses and warms your soul.
+          </p>
+        </div>
+      </section>
+    </div>
+  );
+
+  /**
+   * Render the menu tab. Displays all available products in a grid.
+   */
+  const renderMenu = () => (
+    <div className="space-y-8">
+      <h2 className="text-3xl font-bold text-amber-900 dark:text-amber-200 mb-6 text-center">
+        Our Coffee Menu
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {coffeeProducts.map((product) => (
+          <div
+            key={product.id}
+            className="bg-white dark:bg-[#2b2119] rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+          >
+            <img
+              src={product.image}
+              alt={product.name}
+              className="w-full h-48 object-cover"
+            />
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="text-xl font-bold text-amber-900 dark:text-amber-200">
+                  {product.name}
+                </h3>
+                <span className="text-amber-700 dark:text-amber-300 font-semibold">
+                  Rp {product.price.toLocaleString()}
+                </span>
               </div>
               <button
-                className="w-full bg-blue-600 text-white py-2 rounded mt-4 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                onClick={placeOrder}
+                onClick={() => addToCart(product)}
+                className="w-full bg-amber-600 hover:bg-amber-700 text-white py-2 px-4 rounded-lg transition-colors duration-300"
               >
-                Pesan Sekarang
+                Add to Cart
               </button>
             </div>
-          )}
-        </section>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
-        {/* Transaction history */}
-        <section className="mt-12">
-          <h2 className="text-2xl font-semibold mb-4">Riwayat Transaksi</h2>
-          {history.length === 0 ? (
-            <p className="text-gray-600 dark:text-gray-400">
-              Belum ada transaksi.
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {history.map((order) => (
-                <div
-                  key={order.id}
-                  className="bg-white dark:bg-[#2b2119] p-4 rounded-lg shadow"
-                >
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {order.timestamp}
-                  </p>
-                  <ul className="mt-2 space-y-1 text-sm">
-                    {order.items.map((itm) => (
-                      <li key={itm.id} className="flex justify-between">
-                        <span>
-                          {itm.name} x{itm.qty}
-                        </span>
-                        <span>
-                          Rp {(itm.price * itm.qty).toLocaleString("id-ID")}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="flex justify-between font-semibold border-t pt-2 mt-2 text-sm">
-                    <span>Total</span>
-                    <span>Rp {order.total.toLocaleString("id-ID")}</span>
-                  </div>
-                  <div className="mt-3 flex justify-end">
-                    <button
-                      className="text-sm text-blue-600 dark:text-blue-400 underline hover:opacity-80"
-                      onClick={() => openHistoryModal(order)}
-                    >
-                      Lihat Detail
-                    </button>
-                  </div>
+  /**
+   * Render the cart tab. Displays the contents of the cart and a checkout button.
+   * Also includes the transaction history below the cart for convenience.
+   */
+  const renderCart = () => (
+    <div className="space-y-6">
+      <h2 className="text-3xl font-bold text-amber-900 dark:text-amber-200 mb-6 text-center">
+        Your Order
+      </h2>
+      {cart.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-amber-400 dark:text-amber-300 text-6xl mb-4">
+            ☕
+          </div>
+          <p className="text-amber-700 dark:text-amber-300 text-xl">
+            Your cart is empty
+          </p>
+          <button
+            onClick={() => setActiveTab("menu")}
+            className="mt-4 bg-amber-600 hover:bg-amber-700 text-white py-2 px-6 rounded-lg transition-colors duration-300"
+          >
+            Browse Menu
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {cart.map((item) => (
+            <div
+              key={item.id}
+              className="bg-white dark:bg-[#2b2119] rounded-xl p-4 shadow-md flex justify-between items-center"
+            >
+              <div>
+                <h3 className="font-semibold text-amber-900 dark:text-amber-200">
+                  {item.name}
+                </h3>
+                <p className="text-amber-700 dark:text-amber-300">
+                  Rp {item.price.toLocaleString()} x {item.quantity}
+                </p>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="text-amber-900 dark:text-amber-200 font-bold">
+                  Rp {(item.price * item.quantity).toLocaleString()}
+                </span>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => decrementItem(item.id)}
+                    className="border border-amber-300 dark:border-amber-600 text-amber-700 dark:text-amber-300 rounded px-2"
+                  >
+                    -
+                  </button>
+                  <span className="min-w-[24px] text-center">
+                    {item.quantity}
+                  </span>
+                  <button
+                    onClick={() => incrementItem(item.id)}
+                    className="border border-amber-300 dark:border-amber-600 text-amber-700 dark:text-amber-300 rounded px-2"
+                  >
+                    +
+                  </button>
                 </div>
-              ))}
+                <button
+                  onClick={() => removeFromCart(item.id)}
+                  className="text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-500 transition-colors duration-200"
+                >
+                  Remove
+                </button>
+              </div>
             </div>
+          ))}
+          <div className="bg-amber-50 dark:bg-[#3b2a1d] rounded-xl p-6 mt-6">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-xl font-bold text-amber-900 dark:text-amber-200">
+                Total:
+              </span>
+              <span className="text-2xl font-bold text-amber-700 dark:text-amber-300">
+                Rp {getTotalPrice().toLocaleString()}
+              </span>
+            </div>
+            <button
+              className="w-full bg-amber-600 hover:bg-amber-700 text-white py-3 px-6 rounded-lg font-semibold text-lg transition-colors duration-300"
+              onClick={placeOrder}
+            >
+              Checkout
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Transaction History Section */}
+      <section className="mt-12">
+        <h3 className="text-2xl font-semibold text-amber-900 dark:text-amber-200 mb-4 text-center">
+          Riwayat Transaksi
+        </h3>
+        {history.length === 0 ? (
+          <p className="text-center text-amber-700 dark:text-amber-300">
+            Belum ada transaksi.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {history.map((order) => (
+              <div
+                key={order.id}
+                className="bg-white dark:bg-[#2b2119] p-4 rounded-lg shadow"
+              >
+                <p className="text-sm text-amber-700 dark:text-amber-400">
+                  {order.timestamp}
+                </p>
+                <ul className="mt-2 space-y-1 text-sm">
+                  {order.items.map((itm) => (
+                    <li key={itm.id} className="flex justify-between">
+                      <span>
+                        {itm.name} x{itm.qty}
+                      </span>
+                      <span>
+                        Rp {(itm.price * itm.qty).toLocaleString("id-ID")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex justify-between font-semibold border-t border-amber-200 dark:border-amber-600 pt-2 mt-2 text-sm">
+                  <span>Total</span>
+                  <span>Rp {order.total.toLocaleString("id-ID")}</span>
+                </div>
+                <div className="mt-3 flex justify-end">
+                  <button
+                    className="text-sm text-blue-600 dark:text-blue-400 underline hover:opacity-80"
+                    onClick={() => openHistoryModal(order)}
+                  >
+                    Lihat Detail
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-amber-100 dark:from-[#1c1a18] dark:to-[#2e1c0f]">
+      {/* Header */}
+      <header className="bg-white dark:bg-[#2b2119] shadow-lg sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-amber-600 dark:bg-amber-700 rounded-full flex items-center justify-center">
+                <span className="text-white text-xl">☕</span>
+              </div>
+              <h1 className="text-2xl font-bold text-amber-900 dark:text-amber-200">
+                Brew Haven
+              </h1>
+            </div>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex space-x-8">
+              {["home", "menu", "cart"].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 capitalize ${
+                    activeTab === tab
+                      ? "bg-amber-600 dark:bg-amber-700 text-white"
+                      : "text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-400 hover:bg-amber-100 dark:hover:bg-[#3b2a1d]"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+              {/* Theme toggle button for desktop */}
+              <button
+                onClick={toggleTheme}
+                className="px-4 py-2 ml-4 rounded-lg font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-[#3b2a1d] transition-colors duration-200"
+              >
+                {isDark ? "Tema Terang" : "Tema Gelap"}
+              </button>
+            </nav>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden flex items-center space-x-2">
+              <button
+                onClick={toggleTheme}
+                className="text-amber-700 dark:text-amber-300 text-xl"
+                title="Toggle Tema"
+              >
+                {isDark ? "☀️" : "🌙"}
+              </button>
+              <button
+                onClick={toggleMenu}
+                className="text-amber-700 dark:text-amber-300"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+          {/* Mobile Navigation */}
+          {isMenuOpen && (
+            <nav className="md:hidden mt-4 pb-4">
+              {["home", "menu", "cart"].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    setIsMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 capitalize mb-2 ${
+                    activeTab === tab
+                      ? "bg-amber-600 dark:bg-amber-700 text-white"
+                      : "text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-400 hover:bg-amber-100 dark:hover:bg-[#3b2a1d]"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </nav>
           )}
-        </section>
+        </div>
+      </header>
+
+      {/* Cart Notification */}
+      {cart.length > 0 && activeTab !== "cart" && (
+        <div className="fixed top-20 right-4 bg-amber-600 dark:bg-amber-700 text-white px-4 py-2 rounded-full shadow-lg z-50 animate-bounce">
+          <span>
+            🛒 {cart.reduce((total, item) => total + item.quantity, 0)} items in
+            cart
+          </span>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        {activeTab === "home" && renderHome()}
+        {activeTab === "menu" && renderMenu()}
+        {activeTab === "cart" && renderCart()}
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-100 dark:bg-[#2e1c0f] py-4 mt-auto text-center text-sm text-gray-500 dark:text-gray-400">
-        © {new Date().getFullYear()} Kafe Kopi. Dibuat dengan React & Tailwind
-        CSS.
+      <footer className="bg-amber-900 dark:bg-[#2e1c0f] text-amber-100 py-8 mt-12">
+        <div className="container mx-auto px-4 text-center">
+          <div className="flex justify-center items-center space-x-3 mb-4">
+            <div className="w-8 h-8 bg-amber-600 dark:bg-amber-700 rounded-full flex items-center justify-center">
+              <span className="text-white">☕</span>
+            </div>
+            <h3 className="text-xl font-bold">Brew Haven</h3>
+          </div>
+          <p className="mb-4">
+            Crafting exceptional coffee experiences since 2010
+          </p>
+          <p className="text-amber-300">
+            © {new Date().getFullYear()} Brew Haven. All rights reserved.
+          </p>
+        </div>
       </footer>
 
       {/* Order Confirmation Modal */}
@@ -462,7 +638,7 @@ export default function App() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70">
           <div className="bg-white dark:bg-[#2b2119] rounded-lg p-6 w-11/12 max-w-md mx-auto shadow-lg text-gray-800 dark:text-gray-200">
             <h3 className="text-lg font-semibold mb-2">Konfirmasi Pesanan</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+            <p className="text-sm text-amber-700 dark:text-amber-300 mb-3">
               Anda memesan:
             </p>
             <ul className="space-y-1 text-sm mb-3">
@@ -477,13 +653,13 @@ export default function App() {
                 </li>
               ))}
             </ul>
-            <div className="flex justify-between font-semibold border-t border-gray-200 dark:border-gray-700 pt-2 mb-4 text-sm">
+            <div className="flex justify-between font-semibold border-t border-amber-200 dark:border-amber-600 pt-2 mb-4 text-sm">
               <span>Total</span>
               <span>Rp {modalOrder.total.toLocaleString("id-ID")}</span>
             </div>
             <div className="flex justify-end space-x-2">
               <button
-                className="px-4 py-2 rounded border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="px-4 py-2 rounded border border-amber-300 dark:border-amber-600 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-[#3b2a1d]"
                 onClick={closeModal}
               >
                 Batal
@@ -519,7 +695,7 @@ export default function App() {
                 </li>
               ))}
             </ul>
-            <div className="flex justify-between font-semibold border-t border-gray-200 dark:border-gray-700 pt-2 mb-4 text-sm">
+            <div className="flex justify-between font-semibold border-t border-amber-200 dark:border-amber-600 pt-2 mb-4 text-sm">
               <span>Total</span>
               <span>Rp {successOrder.total.toLocaleString("id-ID")}</span>
             </div>
@@ -553,7 +729,7 @@ export default function App() {
                 </li>
               ))}
             </ul>
-            <div className="flex justify-between font-semibold border-t border-gray-200 dark:border-gray-700 pt-2 mb-4 text-sm">
+            <div className="flex justify-between font-semibold border-t border-amber-200 dark:border-amber-600 pt-2 mb-4 text-sm">
               <span>Total</span>
               <span>Rp {historyOrder.total.toLocaleString("id-ID")}</span>
             </div>
